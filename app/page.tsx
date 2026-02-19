@@ -10,6 +10,7 @@ import DistrictChart from "@/components/DistrictChart";
 import DistrictSummaryTable from "@/components/DistrictSummaryTable";
 import Filters from "@/components/Filters";
 import AttendanceTable from "@/components/AttendanceTable";
+import ZeroAttendanceTable from "@/components/ZeroAttendanceTable";
 import {
   AttendanceRecord,
   filterData,
@@ -124,6 +125,7 @@ export default function DashboardPage() {
             </div>
             <CountyPieChart data={countySummaries} />
             <AttendanceTable data={filtered1to1} />
+            <ZeroAttendanceTable data={filtered1to1} />
           </>
         )}
 
@@ -155,6 +157,7 @@ export default function DashboardPage() {
             </div>
             <DistrictSummaryTable data={districtSummaries} />
             <AttendanceTable data={filteredDistricts} />
+            <ZeroAttendanceTable data={filteredDistricts} />
           </>
         )}
 
