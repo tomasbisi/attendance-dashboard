@@ -5,6 +5,7 @@ import FileUpload from "@/components/FileUpload";
 import MetricCards from "@/components/MetricCards";
 import AttendanceChart from "@/components/AttendanceChart";
 import ActivityChart from "@/components/ActivityChart";
+import CountyPieChart from "@/components/CountyPieChart";
 import DistrictChart from "@/components/DistrictChart";
 import DistrictSummaryTable from "@/components/DistrictSummaryTable";
 import Filters from "@/components/Filters";
@@ -19,6 +20,7 @@ import {
   getSchoolSummaries,
   getActivitySummaries,
   getDistrictSummaries,
+  getCountySummaries,
   get1to1Data,
   getDistrictData,
 } from "@/lib/dataService";
@@ -45,6 +47,7 @@ export default function DashboardPage() {
 
   const schoolSummaries = useMemo(() => getSchoolSummaries(filtered1to1), [filtered1to1]);
   const activitySummaries1to1 = useMemo(() => getActivitySummaries(filtered1to1), [filtered1to1]);
+  const countySummaries = useMemo(() => getCountySummaries(filtered1to1), [filtered1to1]);
 
   const districtSummaries = useMemo(() => getDistrictSummaries(dataDistricts), [dataDistricts]);
   const activitySummariesDistricts = useMemo(() => getActivitySummaries(filteredDistricts), [filteredDistricts]);
@@ -119,6 +122,7 @@ export default function DashboardPage() {
               <AttendanceChart schoolData={schoolSummaries} />
               <ActivityChart data={activitySummaries1to1} />
             </div>
+            <CountyPieChart data={countySummaries} />
             <AttendanceTable data={filtered1to1} />
           </>
         )}

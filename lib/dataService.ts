@@ -36,6 +36,12 @@ export interface ActivitySummary {
   avgAttendanceRate: number;
 }
 
+export interface CountySummary {
+  county: string;
+  totalStudents: number;
+  avgAttendanceRate: number;
+}
+
 export interface DistrictSummary {
   district: string;
   totalStudents: number;
@@ -123,6 +129,23 @@ export function getDistrictSummaries(data: AttendanceRecord[]): DistrictSummary[
       };
     })
     .sort((a, b) => b.avgAttendanceRate - a.avgAttendanceRate);
+}
+
+export function getCountySummaries(data: AttendanceRecord[]): CountySummary[] {
+  const byCounty: Record<string, AttendanceRecord[]> = {};
+  data.forEach((r) => {
+    const key = r.county || "Unknown";
+    if (!byCounty[key]) byCounty[key] = [];
+    byCounty[key].push(r);
+  });
+
+  return Object.entries(byCounty).map(([county, records]) => ({
+    county,
+    totalStudents: records.length,
+    avgAttendanceRate: Math.round(
+      records.reduce((sum, r) => sum + r.attendanceRate, 0) / records.length
+    ),
+  }));
 }
 
 export function getActivitySummaries(data: AttendanceRecord[]): ActivitySummary[] {
