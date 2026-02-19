@@ -128,8 +128,17 @@ export default function AttendanceTable({ data }: AttendanceTableProps) {
                   <TableHead className={thClass} onClick={() => handleSort("activity")}>
                     Activity <SortIcon sortConfig={sortConfig} colKey="activity" />
                   </TableHead>
+                  <TableHead className={thClass} onClick={() => handleSort("category")}>
+                    Category <SortIcon sortConfig={sortConfig} colKey="category" />
+                  </TableHead>
+                  <TableHead className={thClass} onClick={() => handleSort("type")}>
+                    Type <SortIcon sortConfig={sortConfig} colKey="type" />
+                  </TableHead>
                   <TableHead className={`text-center ${thClass}`} onClick={() => handleSort("enrolled")}>
                     Enrolled <SortIcon sortConfig={sortConfig} colKey="enrolled" />
+                  </TableHead>
+                  <TableHead className={`text-center ${thClass}`} onClick={() => handleSort("waitlist")}>
+                    Waitlist <SortIcon sortConfig={sortConfig} colKey="waitlist" />
                   </TableHead>
                   <TableHead className={`text-right ${thClass}`} onClick={() => handleSort("totalClasses")}>
                     Total Classes <SortIcon sortConfig={sortConfig} colKey="totalClasses" />
@@ -152,8 +161,17 @@ export default function AttendanceTable({ data }: AttendanceTableProps) {
                     <TableCell>{row.schoolName}</TableCell>
                     <TableCell className="text-muted-foreground">{row.county}</TableCell>
                     <TableCell className="text-muted-foreground">{row.activity}</TableCell>
+                    <TableCell className="text-muted-foreground">{row.category}</TableCell>
+                    <TableCell className="text-muted-foreground">{row.type}</TableCell>
                     <TableCell className="text-center">
                       {row.enrolled ? (
+                        <Badge variant="default" className="text-xs">Yes</Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs">No</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {row.waitlist ? (
                         <Badge variant="default" className="text-xs">Yes</Badge>
                       ) : (
                         <Badge variant="secondary" className="text-xs">No</Badge>

@@ -7,7 +7,10 @@ export interface AttendanceRecord {
   schoolName: string;
   county: string;
   activity: string;
+  category: string;
+  type: string;
   enrolled: boolean;
+  waitlist: boolean;
   totalClasses: number;
   totalAttendance: number;
   attendanceRate: number;
@@ -189,9 +192,9 @@ export function getMetrics(data: AttendanceRecord[]) {
 }
 
 // Parse raw Excel rows into AttendanceRecord[]
-// Columns: Student Name, District, School Name, County, Activity, Enrolled?,
-//          Total Classes, Total Attendance%, Attendance, Attendance last 5 sessions,
-//          Parent 1 Name, Parent 1 Email, Parent 1 Phone,
+// Columns: Student Name, District, School Name, County, Activity, Category, Type,
+//          Enrolled?, Waitlist, Total Classes, Total Attendance%, Attendance,
+//          Attendance last 5 sessions, Parent 1 Name, Parent 1 Email, Parent 1 Phone,
 //          Parent 2 Name, Parent 2 Email, Parent 2 Phone, External ID
 export function parseExcelRows(rows: Record<string, unknown>[]): AttendanceRecord[] {
   const normalizeRow = (row: Record<string, unknown>): Record<string, unknown> =>
@@ -219,13 +222,19 @@ export function parseExcelRows(rows: Record<string, unknown>[]): AttendanceRecor
       const enrolledRaw = String(row["Enrolled?"] ?? "").toLowerCase().trim();
       const enrolled = enrolledRaw === "yes" || enrolledRaw === "true" || enrolledRaw === "1";
 
+      const waitlistRaw = String(row["Waitlist"] ?? "").toLowerCase().trim();
+      const waitlist = waitlistRaw === "yes" || waitlistRaw === "true" || waitlistRaw === "1";
+
       return {
         district: String(row["District"] ?? "").trim(),
         studentName: String(row["Student Name"] ?? ""),
         schoolName: String(row["School Name"] ?? "Unknown School"),
         county: String(row["County"] ?? "").trim(),
         activity: String(row["Activity"] ?? ""),
+        category: String(row["Category"] ?? "").trim(),
+        type: String(row["Type"] ?? "").trim(),
         enrolled,
+        waitlist,
         totalClasses: parseNum(row["Total Classes"]),
         totalAttendance: parseNum(row["Attendance"]),
         attendanceRate: rate,
