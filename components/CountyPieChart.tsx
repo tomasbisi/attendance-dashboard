@@ -41,10 +41,16 @@ const renderCustomLabel = ({
 };
 
 export default function CountyPieChart({ data }: CountyPieChartProps) {
-  const chartData = data.map((d) => ({
+  const studentData = data.map((d) => ({
     name: d.county,
     value: d.totalStudents,
     avgAttendanceRate: d.avgAttendanceRate,
+  }));
+
+  const attendanceData = data.map((d) => ({
+    name: d.county,
+    value: d.avgAttendanceRate,
+    totalStudents: d.totalStudents,
   }));
 
   return (
@@ -58,37 +64,71 @@ export default function CountyPieChart({ data }: CountyPieChartProps) {
             No data to display
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={320}>
-            <PieChart>
-              <Pie
-                data={chartData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={renderCustomLabel}
-                outerRadius={120}
-                dataKey="value"
-              >
-                {chartData.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(value, name, props) => {
-                  const d = props.payload;
-                  return [
-                    [`${value} students`, "Total"],
-                    [`${d.avgAttendanceRate}%`, "Avg Attendance"],
-                  ].flat();
-                }}
-              />
-              <Legend
-                formatter={(value) => (
-                  <span className="text-sm">{value}</span>
-                )}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Students distribution */}
+            <div>
+              <p className="text-sm font-medium text-center text-muted-foreground mb-2">Student Distribution</p>
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={studentData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={renderCustomLabel}
+                    outerRadius={100}
+                    dataKey="value"
+                  >
+                    {studentData.map((_, index) => (
+                      <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name, props) => {
+                      const d = props.payload;
+                      return [
+                        [`${value} students`, "Total"],
+                        [`${d.avgAttendanceRate}%`, "Avg Attendance"],
+                      ].flat();
+                    }}
+                  />
+                  <Legend formatter={(value) => <span className="text-xs">{value}</span>} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Attendance % distribution */}
+            <div>
+              <p className="text-sm font-medium text-center text-muted-foreground mb-2">Attendance % by County</p>
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={attendanceData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={renderCustomLabel}
+                    outerRadius={100}
+                    dataKey="value"
+                  >
+                    {attendanceData.map((_, index) => (
+                      <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name, props) => {
+                      const d = props.payload;
+                      return [
+                        [`${value}%`, "Avg Attendance Rate"],
+                        [`${d.totalStudents} students`, "Total"],
+                      ].flat();
+                    }}
+                  />
+                  <Legend formatter={(value) => <span className="text-xs">{value}</span>} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>
