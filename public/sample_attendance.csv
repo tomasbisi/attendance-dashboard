@@ -1,0 +1,11 @@
+Student Name,School Name,Student Category,Enrolled?,Total Classes,Total Attendance,% Attendance,Attendance last 5 sessions,Parent 1 Name,Parent 1 Email,Parent 1 Phone,Parent 2 Name,Parent 2 Email,Parent 2 Phone,External ID
+John Smith,Lincoln Elementary,Surf Lessons,Yes,20,18,90,5,Mary Smith,mary@email.com,555-1001,Bob Smith,bob@email.com,555-1002,EXT001
+Sara Johnson,Lincoln Elementary,Tennis,Yes,20,14,70,3,Lisa Johnson,lisa@email.com,555-1003,,,,EXT002
+Carlos Rivera,Jefferson Middle,Surf Lessons,Yes,20,10,50,2,Ana Rivera,ana@email.com,555-1004,Luis Rivera,luis@email.com,555-1005,EXT003
+Emily Chen,Jefferson Middle,Yoga,Yes,20,19,95,5,Wei Chen,wei@email.com,555-1006,,,,EXT004
+Marcus Lee,Roosevelt High,Tennis,No,20,8,40,1,Janet Lee,janet@email.com,555-1007,Tom Lee,tom@email.com,555-1008,EXT005
+Aisha Brown,Lincoln Elementary,Yoga,Yes,20,17,85,4,Diana Brown,diana@email.com,555-1009,,,,EXT006
+Tyler Davis,Roosevelt High,Surf Lessons,Yes,20,12,60,3,Karen Davis,karen@email.com,555-1010,Mike Davis,mike@email.com,555-1011,EXT007
+Sofia Martinez,Jefferson Middle,Tennis,Yes,20,20,100,5,Rosa Martinez,rosa@email.com,555-1012,,,,EXT008
+James Wilson,Lincoln Elementary,Surf Lessons,Yes,20,15,75,4,Ellen Wilson,ellen@email.com,555-1013,Paul Wilson,paul@email.com,555-1014,EXT009
+Mia Thompson,Roosevelt High,Yoga,Yes,20,6,30,1,Grace Thompson,grace@email.com,555-1015,,,,EXT010
