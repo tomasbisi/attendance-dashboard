@@ -118,7 +118,7 @@ export default function DistrictSummaryTable({ data }: { data: DistrictSummary[]
                     <TableCell className="text-right"><RateBadge rate={row.avgAttendanceRate} /></TableCell>
                     <TableCell className="text-right">{row.avgLast5}</TableCell>
                     <TableCell className="text-right">
-                      <span className={row.atRisk > 0 ? "text-red-600 font-medium" : ""}>{row.atRisk}</span>
+                      <span className={row.atRisk > 0 ? "text-destructive font-medium" : ""}>{row.atRisk}</span>
                     </TableCell>
                   </TableRow>
                 ))}

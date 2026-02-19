@@ -100,7 +100,7 @@ export default function DistrictChart({ data }: DistrictChartProps) {
                   metric === "avgAttendanceRate" ? "Avg Attendance Rate %" : "Enrollment Rate %"
                 }
               />
-              <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="value" fill="#3e8ccc" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

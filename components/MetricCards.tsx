@@ -21,10 +21,10 @@ export default function MetricCards({
 }: MetricCardsProps) {
   const rateColor =
     avgAttendanceRate >= 80
-      ? "text-green-600"
+      ? "text-[#53b078]"
       : avgAttendanceRate >= 60
-      ? "text-yellow-600"
-      : "text-red-600";
+      ? "text-[#d97706]"
+      : "text-destructive";
 
   const rateBadge =
     avgAttendanceRate >= 80
@@ -80,7 +80,7 @@ export default function MetricCards({
           <AlertTriangle className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold text-red-600">{atRisk}</div>
+          <div className="text-3xl font-bold text-destructive">{atRisk}</div>
           <p className="text-xs text-muted-foreground mt-2">
             Below 60% attendance
           </p>

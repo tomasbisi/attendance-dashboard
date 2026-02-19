@@ -86,9 +86,9 @@ export default function FileUpload({ onDataLoaded }: FileUploadProps) {
       <CardContent className="flex flex-col items-center justify-center py-8 gap-3">
         {fileName ? (
           <>
-            <FileSpreadsheet className="h-8 w-8 text-green-600" />
+            <FileSpreadsheet className="h-8 w-8 text-primary" />
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-green-700">{fileName}</span>
+              <span className="text-sm font-medium text-primary">{fileName}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); clear(); }}
                 className="text-muted-foreground hover:text-destructive transition-colors"

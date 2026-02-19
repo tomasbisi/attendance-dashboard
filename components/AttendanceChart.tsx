@@ -71,8 +71,8 @@ export default function AttendanceChart({ schoolData }: AttendanceChartProps) {
                 }}
               />
               <Legend verticalAlign="top" />
-              <Bar yAxisId="rate" dataKey="Avg Attendance %" fill="#6366f1" radius={[4, 4, 0, 0]} />
-              <Bar yAxisId="students" dataKey="Students" fill="#a5b4fc" radius={[4, 4, 0, 0]} />
+              <Bar yAxisId="rate" dataKey="Avg Attendance %" fill="#3e8ccc" radius={[4, 4, 0, 0]} />
+              <Bar yAxisId="students" dataKey="Students" fill="#cce8ff" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

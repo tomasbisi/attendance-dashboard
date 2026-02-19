@@ -19,7 +19,7 @@ interface ActivityChartProps {
   data: ActivitySummary[];
 }
 
-const COLORS = ["#6366f1", "#8b5cf6", "#a78bfa", "#c4b5fd", "#ddd6fe", "#ede9fe"];
+const COLORS = ["#3e8ccc", "#e81e76", "#53b078", "#fd7723", "#c652ff", "#13c8ae", "#284ae3", "#daba00"];
 
 export default function ActivityChart({ data }: ActivityChartProps) {
   const [metric, setMetric] = useState<"enrollmentRate" | "avgAttendanceRate">("enrollmentRate");
