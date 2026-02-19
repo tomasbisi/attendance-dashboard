@@ -122,6 +122,9 @@ export default function AttendanceTable({ data }: AttendanceTableProps) {
                   <TableHead className={thClass} onClick={() => handleSort("schoolName")}>
                     School <SortIcon sortConfig={sortConfig} colKey="schoolName" />
                   </TableHead>
+                  <TableHead className={thClass} onClick={() => handleSort("county")}>
+                    County <SortIcon sortConfig={sortConfig} colKey="county" />
+                  </TableHead>
                   <TableHead className={thClass} onClick={() => handleSort("activity")}>
                     Activity <SortIcon sortConfig={sortConfig} colKey="activity" />
                   </TableHead>
@@ -147,6 +150,7 @@ export default function AttendanceTable({ data }: AttendanceTableProps) {
                   <TableRow key={i}>
                     <TableCell className="font-medium">{row.studentName}</TableCell>
                     <TableCell>{row.schoolName}</TableCell>
+                    <TableCell className="text-muted-foreground">{row.county}</TableCell>
                     <TableCell className="text-muted-foreground">{row.activity}</TableCell>
                     <TableCell className="text-center">
                       {row.enrolled ? (

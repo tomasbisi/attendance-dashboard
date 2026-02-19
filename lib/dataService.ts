@@ -2,8 +2,10 @@
 // Currently reads from parsed Excel data passed in from the client
 
 export interface AttendanceRecord {
+  district: string;
   studentName: string;
   schoolName: string;
+  county: string;
   activity: string;
   enrolled: boolean;
   totalClasses: number;
@@ -34,8 +36,31 @@ export interface ActivitySummary {
   avgAttendanceRate: number;
 }
 
+export interface DistrictSummary {
+  district: string;
+  totalStudents: number;
+  enrolled: number;
+  enrollmentRate: number;
+  avgAttendanceRate: number;
+  avgLast5: number;
+  atRisk: number;
+  schools: number;
+}
+
 export function getSchools(data: AttendanceRecord[]): string[] {
   return Array.from(new Set(data.map((r) => r.schoolName))).sort();
+}
+
+export function getDistricts(data: AttendanceRecord[]): string[] {
+  return Array.from(new Set(data.filter((r) => r.district).map((r) => r.district))).sort();
+}
+
+export function get1to1Data(data: AttendanceRecord[]): AttendanceRecord[] {
+  return data.filter((r) => !r.district || r.district.trim() === "");
+}
+
+export function getDistrictData(data: AttendanceRecord[]): AttendanceRecord[] {
+  return data.filter((r) => r.district && r.district.trim() !== "");
 }
 
 export function filterData(
@@ -43,6 +68,13 @@ export function filterData(
   school: string
 ): AttendanceRecord[] {
   return data.filter((r) => school === "all" || r.schoolName === school);
+}
+
+export function filterByDistrict(
+  data: AttendanceRecord[],
+  district: string
+): AttendanceRecord[] {
+  return data.filter((r) => district === "all" || r.district === district);
 }
 
 export function getSchoolSummaries(data: AttendanceRecord[]): SchoolSummary[] {
@@ -64,6 +96,34 @@ export function getSchoolSummaries(data: AttendanceRecord[]): SchoolSummary[] {
   }));
 }
 
+export function getDistrictSummaries(data: AttendanceRecord[]): DistrictSummary[] {
+  const byDistrict: Record<string, AttendanceRecord[]> = {};
+  data.forEach((r) => {
+    if (!byDistrict[r.district]) byDistrict[r.district] = [];
+    byDistrict[r.district].push(r);
+  });
+
+  return Object.entries(byDistrict)
+    .map(([district, records]) => {
+      const enrolled = records.filter((r) => r.enrolled).length;
+      const schools = new Set(records.map((r) => r.schoolName)).size;
+      return {
+        district,
+        totalStudents: records.length,
+        enrolled,
+        enrollmentRate: Math.round((enrolled / records.length) * 100),
+        avgAttendanceRate: Math.round(
+          records.reduce((sum, r) => sum + r.attendanceRate, 0) / records.length
+        ),
+        avgLast5: Math.round(
+          records.reduce((sum, r) => sum + r.last5Sessions, 0) / records.length
+        ),
+        atRisk: records.filter((r) => r.attendanceRate < 60).length,
+        schools,
+      };
+    })
+    .sort((a, b) => b.avgAttendanceRate - a.avgAttendanceRate);
+}
 
 export function getActivitySummaries(data: AttendanceRecord[]): ActivitySummary[] {
   const byActivity: Record<string, AttendanceRecord[]> = {};
@@ -102,22 +162,15 @@ export function getMetrics(data: AttendanceRecord[]) {
       ? Math.round(data.reduce((sum, r) => sum + r.last5Sessions, 0) / totalStudents)
       : 0;
 
-  return {
-    totalStudents,
-    enrolled,
-    avgAttendanceRate: avgRate,
-    atRisk,
-    avgLast5,
-  };
+  return { totalStudents, enrolled, avgAttendanceRate: avgRate, atRisk, avgLast5 };
 }
 
 // Parse raw Excel rows into AttendanceRecord[]
-// Columns: Student Name, School Name, Enrolled?,
-//          Total Classes, Total Attendance, % Attendance,
-//          Attendance last 5 sessions, Parent 1 Name, Parent 1 Email,
-//          Parent 1 Phone, Parent 2 Name, Parent 2 Email, Parent 2 Phone, External ID
+// Columns: District, Student Name, School Name, County, Activity, Enrolled?,
+//          Total Classes, Total Attendance%, Attendance, Attendance last 5 sessions,
+//          Parent 1 Name, Parent 1 Email, Parent 1 Phone,
+//          Parent 2 Name, Parent 2 Email, Parent 2 Phone, External ID
 export function parseExcelRows(rows: Record<string, unknown>[]): AttendanceRecord[] {
-  // Normalize row keys by trimming whitespace to handle Excel column name inconsistencies
   const normalizeRow = (row: Record<string, unknown>): Record<string, unknown> =>
     Object.fromEntries(Object.entries(row).map(([k, v]) => [k.trim(), v]));
 
@@ -144,8 +197,10 @@ export function parseExcelRows(rows: Record<string, unknown>[]): AttendanceRecor
       const enrolled = enrolledRaw === "yes" || enrolledRaw === "true" || enrolledRaw === "1";
 
       return {
+        district: String(row["District"] ?? "").trim(),
         studentName: String(row["Student Name"] ?? ""),
         schoolName: String(row["School Name"] ?? "Unknown School"),
+        county: String(row["County"] ?? "").trim(),
         activity: String(row["Activity"] ?? ""),
         enrolled,
         totalClasses: parseNum(row["Total Classes"]),

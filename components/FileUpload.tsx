@@ -40,7 +40,7 @@ export default function FileUpload({ onDataLoaded }: FileUploadProps) {
 
         const parsed = parseExcelRows(allRows);
         if (parsed.length === 0) {
-          setError("No valid rows found. Check column headers: Student Name · School Name · Activity · Enrolled? · Total Classes · Total Attendance% · Attendance · Attendance last 5 sessions.");
+          setError("No valid rows found. Check column headers: District · Student Name · School Name · County · Activity · Enrolled? · Total Classes · Total Attendance% · Attendance · Attendance last 5 sessions.");
           return;
         }
         setFileName(file.name);
@@ -109,7 +109,7 @@ export default function FileUpload({ onDataLoaded }: FileUploadProps) {
                 Drag &amp; drop or click to browse · All tabs will be combined
               </p>
               <p className="text-xs text-muted-foreground mt-3 font-mono bg-muted px-2 py-1 rounded">
-                Columns: Student Name · School Name · Activity · Enrolled? · Total Classes · Total Attendance% · Attendance · Attendance last 5 sessions
+                Columns: District · Student Name · School Name · County · Activity · Enrolled? · Total Classes · Total Attendance% · Attendance · Attendance last 5 sessions
               </p>
             </div>
           </>
