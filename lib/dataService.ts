@@ -166,7 +166,7 @@ export function getMetrics(data: AttendanceRecord[]) {
 }
 
 // Parse raw Excel rows into AttendanceRecord[]
-// Columns: District, Student Name, School Name, County, Activity, Enrolled?,
+// Columns: Student Name, District, School Name, County, Activity, Enrolled?,
 //          Total Classes, Total Attendance%, Attendance, Attendance last 5 sessions,
 //          Parent 1 Name, Parent 1 Email, Parent 1 Phone,
 //          Parent 2 Name, Parent 2 Email, Parent 2 Phone, External ID
