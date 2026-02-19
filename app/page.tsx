@@ -5,6 +5,8 @@ import FileUpload from "@/components/FileUpload";
 import MetricCards from "@/components/MetricCards";
 import AttendanceChart from "@/components/AttendanceChart";
 import ActivityChart from "@/components/ActivityChart";
+import CategoryChart from "@/components/CategoryChart";
+import TypeChart from "@/components/TypeChart";
 import CountyPieChart from "@/components/CountyPieChart";
 import DistrictChart from "@/components/DistrictChart";
 import DistrictSummaryTable from "@/components/DistrictSummaryTable";
@@ -20,6 +22,8 @@ import {
   getDistricts,
   getSchoolSummaries,
   getActivitySummaries,
+  getCategorySummaries,
+  getTypeSummaries,
   getDistrictSummaries,
   getCountySummaries,
   get1to1Data,
@@ -48,10 +52,14 @@ export default function DashboardPage() {
 
   const schoolSummaries = useMemo(() => getSchoolSummaries(filtered1to1), [filtered1to1]);
   const activitySummaries1to1 = useMemo(() => getActivitySummaries(filtered1to1), [filtered1to1]);
+  const categorySummaries1to1 = useMemo(() => getCategorySummaries(filtered1to1), [filtered1to1]);
+  const typeSummaries1to1 = useMemo(() => getTypeSummaries(filtered1to1), [filtered1to1]);
   const countySummaries = useMemo(() => getCountySummaries(filtered1to1), [filtered1to1]);
 
   const districtSummaries = useMemo(() => getDistrictSummaries(dataDistricts), [dataDistricts]);
   const activitySummariesDistricts = useMemo(() => getActivitySummaries(filteredDistricts), [filteredDistricts]);
+  const categorySummariesDistricts = useMemo(() => getCategorySummaries(filteredDistricts), [filteredDistricts]);
+  const typeSummariesDistricts = useMemo(() => getTypeSummaries(filteredDistricts), [filteredDistricts]);
 
   const handleDataLoaded = (data: AttendanceRecord[]) => {
     setRawData(data);
@@ -119,10 +127,10 @@ export default function DashboardPage() {
               </span>
             </div>
             <MetricCards {...metrics1to1} />
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              <AttendanceChart schoolData={schoolSummaries} />
-              <ActivityChart data={activitySummaries1to1} />
-            </div>
+            <AttendanceChart schoolData={schoolSummaries} />
+            <ActivityChart data={activitySummaries1to1} />
+            <CategoryChart data={categorySummaries1to1} />
+            <TypeChart data={typeSummaries1to1} />
             <CountyPieChart data={countySummaries} />
             <AttendanceTable data={filtered1to1} />
             <ZeroAttendanceTable data={filtered1to1} />
@@ -151,10 +159,10 @@ export default function DashboardPage() {
               </span>
             </div>
             <MetricCards {...metricsDistricts} />
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              <DistrictChart data={districtSummaries} />
-              <ActivityChart data={activitySummariesDistricts} />
-            </div>
+            <DistrictChart data={districtSummaries} />
+            <ActivityChart data={activitySummariesDistricts} />
+            <CategoryChart data={categorySummariesDistricts} />
+            <TypeChart data={typeSummariesDistricts} />
             <DistrictSummaryTable data={districtSummaries} />
             <AttendanceTable data={filteredDistricts} />
             <ZeroAttendanceTable data={filteredDistricts} />

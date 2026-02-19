@@ -24,6 +24,8 @@ const COLORS = ["#3e8ccc", "#e81e76", "#53b078", "#fd7723", "#c652ff", "#13c8ae"
 export default function ActivityChart({ data }: ActivityChartProps) {
   const [metric, setMetric] = useState<"enrollmentRate" | "avgAttendanceRate">("enrollmentRate");
 
+  const chartHeight = Math.max(320, data.length * 48 + 80);
+
   const chartData = data.map((d) => ({
     name: d.activity,
     value: metric === "enrollmentRate" ? d.enrollmentRate : d.avgAttendanceRate,
@@ -66,7 +68,7 @@ export default function ActivityChart({ data }: ActivityChartProps) {
             No data to display
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={320}>
+          <ResponsiveContainer width="100%" height={chartHeight}>
             <BarChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 40 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis

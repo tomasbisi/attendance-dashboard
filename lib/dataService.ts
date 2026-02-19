@@ -39,6 +39,22 @@ export interface ActivitySummary {
   avgAttendanceRate: number;
 }
 
+export interface CategorySummary {
+  category: string;
+  totalStudents: number;
+  enrolled: number;
+  enrollmentRate: number;
+  avgAttendanceRate: number;
+}
+
+export interface TypeSummary {
+  type: string;
+  totalStudents: number;
+  enrolled: number;
+  enrollmentRate: number;
+  avgAttendanceRate: number;
+}
+
 export interface CountySummary {
   county: string;
   totalStudents: number;
@@ -164,6 +180,54 @@ export function getActivitySummaries(data: AttendanceRecord[]): ActivitySummary[
       const enrolled = records.filter((r) => r.enrolled).length;
       return {
         activity,
+        totalStudents: records.length,
+        enrolled,
+        enrollmentRate: Math.round((enrolled / records.length) * 100),
+        avgAttendanceRate: Math.round(
+          records.reduce((sum, r) => sum + r.attendanceRate, 0) / records.length
+        ),
+      };
+    })
+    .sort((a, b) => b.enrollmentRate - a.enrollmentRate);
+}
+
+export function getCategorySummaries(data: AttendanceRecord[]): CategorySummary[] {
+  const byCategory: Record<string, AttendanceRecord[]> = {};
+  data.forEach((r) => {
+    const key = r.category || "Unknown";
+    if (!byCategory[key]) byCategory[key] = [];
+    byCategory[key].push(r);
+  });
+
+  return Object.entries(byCategory)
+    .map(([category, records]) => {
+      const enrolled = records.filter((r) => r.enrolled).length;
+      return {
+        category,
+        totalStudents: records.length,
+        enrolled,
+        enrollmentRate: Math.round((enrolled / records.length) * 100),
+        avgAttendanceRate: Math.round(
+          records.reduce((sum, r) => sum + r.attendanceRate, 0) / records.length
+        ),
+      };
+    })
+    .sort((a, b) => b.enrollmentRate - a.enrollmentRate);
+}
+
+export function getTypeSummaries(data: AttendanceRecord[]): TypeSummary[] {
+  const byType: Record<string, AttendanceRecord[]> = {};
+  data.forEach((r) => {
+    const key = r.type || "Unknown";
+    if (!byType[key]) byType[key] = [];
+    byType[key].push(r);
+  });
+
+  return Object.entries(byType)
+    .map(([type, records]) => {
+      const enrolled = records.filter((r) => r.enrolled).length;
+      return {
+        type,
         totalStudents: records.length,
         enrolled,
         enrollmentRate: Math.round((enrolled / records.length) * 100),
