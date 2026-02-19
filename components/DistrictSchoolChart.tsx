@@ -11,19 +11,19 @@ import {
   Legend,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { TypeSummary } from "@/lib/dataService";
+import type { SchoolSummary } from "@/lib/dataService";
 
-interface TypeChartProps {
-  data: TypeSummary[];
+interface DistrictSchoolChartProps {
+  data: SchoolSummary[];
 }
 
-export default function TypeChart({ data }: TypeChartProps) {
+export default function DistrictSchoolChart({ data }: DistrictSchoolChartProps) {
   const chartData = [...data]
-    .sort((a, b) => b.enrollmentRate - a.enrollmentRate)
+    .sort((a, b) => b.avgAttendanceRate - a.avgAttendanceRate)
     .map((d) => ({
-      name: d.type,
-      "Enrollment Rate": d.enrollmentRate,
+      name: d.school,
       "Avg Attendance": d.avgAttendanceRate,
+      "Enrollment Rate": d.enrollmentRate,
       enrolled: d.enrolled,
       totalStudents: d.totalStudents,
     }));
@@ -33,7 +33,7 @@ export default function TypeChart({ data }: TypeChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Type Performance</CardTitle>
+        <CardTitle>Attendance &amp; Enrollment by School</CardTitle>
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
@@ -42,14 +42,14 @@ export default function TypeChart({ data }: TypeChartProps) {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={chartHeight}>
-            <BarChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 40 }}>
+            <BarChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
-                angle={-25}
+                angle={-30}
                 textAnchor="end"
                 interval={0}
               />
@@ -70,8 +70,8 @@ export default function TypeChart({ data }: TypeChartProps) {
                 }}
               />
               <Legend verticalAlign="top" />
-              <Bar dataKey="Enrollment Rate" fill="#e81e76" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Avg Attendance" fill="#fd7723" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Avg Attendance" fill="#3e8ccc" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Enrollment Rate" fill="#c652ff" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

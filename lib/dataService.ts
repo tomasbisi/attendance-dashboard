@@ -29,6 +29,8 @@ export interface SchoolSummary {
   avgAttendanceRate: number;
   totalStudents: number;
   avgLast5: number;
+  enrolled: number;
+  enrollmentRate: number;
 }
 
 export interface ActivitySummary {
@@ -109,16 +111,21 @@ export function getSchoolSummaries(data: AttendanceRecord[]): SchoolSummary[] {
     bySchool[r.schoolName].push(r);
   });
 
-  return Object.entries(bySchool).map(([school, records]) => ({
-    school,
-    totalStudents: records.length,
-    avgAttendanceRate: Math.round(
-      records.reduce((sum, r) => sum + r.attendanceRate, 0) / records.length
-    ),
-    avgLast5: Math.round(
-      records.reduce((sum, r) => sum + r.last5Sessions, 0) / records.length
-    ),
-  }));
+  return Object.entries(bySchool).map(([school, records]) => {
+    const enrolled = records.filter((r) => r.enrolled).length;
+    return {
+      school,
+      totalStudents: records.length,
+      enrolled,
+      enrollmentRate: Math.round((enrolled / records.length) * 100),
+      avgAttendanceRate: Math.round(
+        records.reduce((sum, r) => sum + r.attendanceRate, 0) / records.length
+      ),
+      avgLast5: Math.round(
+        records.reduce((sum, r) => sum + r.last5Sessions, 0) / records.length
+      ),
+    };
+  });
 }
 
 export function getDistrictSummaries(data: AttendanceRecord[]): DistrictSummary[] {

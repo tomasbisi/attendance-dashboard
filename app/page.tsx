@@ -10,6 +10,7 @@ import TypeChart from "@/components/TypeChart";
 import CountyPieChart from "@/components/CountyPieChart";
 import DistrictChart from "@/components/DistrictChart";
 import DistrictSummaryTable from "@/components/DistrictSummaryTable";
+import DistrictSchoolChart from "@/components/DistrictSchoolChart";
 import Filters from "@/components/Filters";
 import AttendanceTable from "@/components/AttendanceTable";
 import ZeroAttendanceTable from "@/components/ZeroAttendanceTable";
@@ -57,6 +58,7 @@ export default function DashboardPage() {
   const countySummaries = useMemo(() => getCountySummaries(filtered1to1), [filtered1to1]);
 
   const districtSummaries = useMemo(() => getDistrictSummaries(dataDistricts), [dataDistricts]);
+  const districtSchoolSummaries = useMemo(() => getSchoolSummaries(filteredDistricts), [filteredDistricts]);
   const activitySummariesDistricts = useMemo(() => getActivitySummaries(filteredDistricts), [filteredDistricts]);
   const categorySummariesDistricts = useMemo(() => getCategorySummaries(filteredDistricts), [filteredDistricts]);
   const typeSummariesDistricts = useMemo(() => getTypeSummaries(filteredDistricts), [filteredDistricts]);
@@ -160,6 +162,7 @@ export default function DashboardPage() {
             </div>
             <MetricCards {...metricsDistricts} />
             <DistrictChart data={districtSummaries} />
+            <DistrictSchoolChart data={districtSchoolSummaries} />
             <ActivityChart data={activitySummariesDistricts} />
             <CategoryChart data={categorySummariesDistricts} />
             <TypeChart data={typeSummariesDistricts} />

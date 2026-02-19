@@ -140,6 +140,16 @@ export default function ZeroAttendanceTable({ data }: ZeroAttendanceTableProps) 
                   <TableHead className={`text-right ${thClass}`} onClick={() => handleSort("last5Sessions")}>
                     Last 5 <SortIcon sortConfig={sortConfig} colKey="last5Sessions" />
                   </TableHead>
+                  <TableHead className={thClass} onClick={() => handleSort("parent1Name")}>
+                    P1 Name <SortIcon sortConfig={sortConfig} colKey="parent1Name" />
+                  </TableHead>
+                  <TableHead>P1 Email</TableHead>
+                  <TableHead>P1 Phone</TableHead>
+                  <TableHead className={thClass} onClick={() => handleSort("parent2Name")}>
+                    P2 Name <SortIcon sortConfig={sortConfig} colKey="parent2Name" />
+                  </TableHead>
+                  <TableHead>P2 Email</TableHead>
+                  <TableHead>P2 Phone</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -167,6 +177,12 @@ export default function ZeroAttendanceTable({ data }: ZeroAttendanceTableProps) 
                     </TableCell>
                     <TableCell className="text-right">{row.totalClasses}</TableCell>
                     <TableCell className="text-right">{row.last5Sessions}</TableCell>
+                    <TableCell className="text-muted-foreground">{row.parent1Name}</TableCell>
+                    <TableCell className="text-muted-foreground">{row.parent1Email}</TableCell>
+                    <TableCell className="text-muted-foreground">{row.parent1Phone}</TableCell>
+                    <TableCell className="text-muted-foreground">{row.parent2Name}</TableCell>
+                    <TableCell className="text-muted-foreground">{row.parent2Email}</TableCell>
+                    <TableCell className="text-muted-foreground">{row.parent2Phone}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
