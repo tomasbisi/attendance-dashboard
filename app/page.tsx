@@ -16,6 +16,7 @@ import AttendanceTable from "@/components/AttendanceTable";
 import ZeroAttendanceTable from "@/components/ZeroAttendanceTable";
 import WeeklyTable from "@/components/WeeklyTable";
 import WeeklyLineChart from "@/components/WeeklyLineChart";
+import WeeklyMetricCards from "@/components/WeeklyMetricCards";
 import {
   AttendanceRecord,
   filterData,
@@ -36,6 +37,7 @@ import {
   WeeklyRecord,
   WeeklyMetric,
   getWeeklyOptions,
+  getWeeklyMetrics,
   filterWeekly,
   getMetricLabel,
 } from "@/lib/weeklyService";
@@ -114,6 +116,8 @@ export default function DashboardPage() {
     () => filterWeekly(activeWeeklySet, wDistrict, wSchool, wActivity, wCategory),
     [activeWeeklySet, wDistrict, wSchool, wActivity, wCategory],
   );
+
+  const weeklyMetrics = useMemo(() => getWeeklyMetrics(filteredWeekly), [filteredWeekly]);
 
   // ── Callbacks ────────────────────────────────────────────────────────────────
   const handleAttendanceLoaded = (data: AttendanceRecord[]) => {
@@ -320,6 +324,9 @@ export default function DashboardPage() {
                 </button>
               </div>
             )}
+
+            {/* Summary metric cards */}
+            <WeeklyMetricCards {...weeklyMetrics} />
 
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-3">

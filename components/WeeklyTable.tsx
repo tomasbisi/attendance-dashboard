@@ -21,8 +21,10 @@ function MetricCell({ value, isPct }: { value: number; isPct: boolean }) {
   return <Badge variant="destructive" className="text-xs">{value}%</Badge>;
 }
 
+type SortCol = "latest" | "maxCapacity" | "totalEnrolled" | "waitroom" | number;
+
 export default function WeeklyTable({ data, metric, weekFrom, weekTo }: WeeklyTableProps) {
-  const [sortCol, setSortCol] = useState<"latest" | number | null>(null);
+  const [sortCol, setSortCol] = useState<SortCol | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   if (data.length === 0) {
@@ -48,7 +50,7 @@ export default function WeeklyTable({ data, metric, weekFrom, weekTo }: WeeklyTa
     return rev ? getMetricValue(rev, metric) : 0;
   };
 
-  const handleSort = (col: "latest" | number) => {
+  const handleSort = (col: SortCol) => {
     if (sortCol === col) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
@@ -57,13 +59,16 @@ export default function WeeklyTable({ data, metric, weekFrom, weekTo }: WeeklyTa
     }
   };
 
+  const sortArrow = (col: SortCol) => sortCol === col ? (sortDir === "asc" ? " ↑" : " ↓") : "";
+
   const sorted = [...data].sort((a, b) => {
     let av = 0;
     let bv = 0;
-    if (sortCol === "latest") {
-      av = getLatest(a);
-      bv = getLatest(b);
-    } else if (typeof sortCol === "number") {
+    if (sortCol === "latest") { av = getLatest(a); bv = getLatest(b); }
+    else if (sortCol === "maxCapacity") { av = a.maxCapacity; bv = b.maxCapacity; }
+    else if (sortCol === "totalEnrolled") { av = a.totalEnrolled; bv = b.totalEnrolled; }
+    else if (sortCol === "waitroom") { av = a.waitroom; bv = b.waitroom; }
+    else if (typeof sortCol === "number") {
       const wi = sortCol - weekFrom;
       av = getMetricValue(a.weeks[weekFrom + wi] ?? a.weeks[0], metric);
       bv = getMetricValue(b.weeks[weekFrom + wi] ?? b.weeks[0], metric);
@@ -75,6 +80,7 @@ export default function WeeklyTable({ data, metric, weekFrom, weekTo }: WeeklyTa
 
   const thBase = "px-3 py-2 text-xs font-semibold text-muted-foreground whitespace-nowrap text-right select-none cursor-pointer hover:text-foreground transition-colors";
   const thSticky = "px-3 py-2 text-xs font-semibold text-muted-foreground whitespace-nowrap sticky bg-muted z-10";
+  const thFixed = `${thBase} bg-muted border-r`;
 
   return (
     <Card>
@@ -86,9 +92,21 @@ export default function WeeklyTable({ data, metric, weekFrom, weekTo }: WeeklyTa
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b bg-muted">
+                {/* Sticky identity columns */}
                 <th className={`${thSticky} left-0 text-left border-r`} style={{ minWidth: 110 }}>District</th>
                 <th className={`${thSticky} left-[110px] text-left border-r`} style={{ minWidth: 160 }}>School</th>
                 <th className={`${thSticky} left-[270px] text-left border-r`} style={{ minWidth: 140 }}>Activity</th>
+                {/* Fixed summary columns */}
+                <th className={thFixed} style={{ minWidth: 90 }} onClick={() => handleSort("maxCapacity")}>
+                  Max Cap{sortArrow("maxCapacity")}
+                </th>
+                <th className={thFixed} style={{ minWidth: 90 }} onClick={() => handleSort("totalEnrolled")}>
+                  Enrolled{sortArrow("totalEnrolled")}
+                </th>
+                <th className={`${thFixed} border-r-2`} style={{ minWidth: 90 }} onClick={() => handleSort("waitroom")}>
+                  Waitroom{sortArrow("waitroom")}
+                </th>
+                {/* Weekly metric columns */}
                 {visibleWeeks.map((w, i) => (
                   <th
                     key={i}
@@ -96,8 +114,7 @@ export default function WeeklyTable({ data, metric, weekFrom, weekTo }: WeeklyTa
                     style={{ minWidth: 90 }}
                     onClick={() => handleSort(weekFrom + i)}
                   >
-                    {w.weekLabel}
-                    {sortCol === weekFrom + i ? (sortDir === "asc" ? " ↑" : " ↓") : ""}
+                    {w.weekLabel}{sortArrow(weekFrom + i)}
                   </th>
                 ))}
                 <th
@@ -105,13 +122,16 @@ export default function WeeklyTable({ data, metric, weekFrom, weekTo }: WeeklyTa
                   style={{ minWidth: 80 }}
                   onClick={() => handleSort("latest")}
                 >
-                  Latest{sortCol === "latest" ? (sortDir === "asc" ? " ↑" : " ↓") : ""}
+                  Latest{sortArrow("latest")}
                 </th>
               </tr>
             </thead>
             <tbody>
               {sorted.map((row, i) => {
                 const latest = getLatest(row);
+                const enrollPct = row.maxCapacity > 0
+                  ? Math.round((row.totalEnrolled / row.maxCapacity) * 100)
+                  : 0;
                 return (
                   <tr key={i} className="border-b hover:bg-muted/30 transition-colors">
                     <td className="px-3 py-2 sticky left-0 bg-background border-r text-muted-foreground text-xs" style={{ minWidth: 110 }}>
@@ -123,6 +143,21 @@ export default function WeeklyTable({ data, metric, weekFrom, weekTo }: WeeklyTa
                     <td className="px-3 py-2 sticky left-[270px] bg-background border-r text-muted-foreground" style={{ minWidth: 140 }}>
                       {row.activity}
                     </td>
+                    {/* Fixed summary cells */}
+                    <td className="px-3 py-2 text-right border-r" style={{ minWidth: 90 }}>
+                      {row.maxCapacity || <span className="text-muted-foreground/50">—</span>}
+                    </td>
+                    <td className="px-3 py-2 text-right border-r" style={{ minWidth: 90 }}>
+                      <span className={enrollPct >= 80 ? "text-[#53b078] font-medium" : enrollPct >= 60 ? "text-[#d97706] font-medium" : ""}>
+                        {row.totalEnrolled || <span className="text-muted-foreground/50">—</span>}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-right border-r-2" style={{ minWidth: 90 }}>
+                      <span className={row.waitroom > 0 ? "text-[#d97706] font-medium" : "text-muted-foreground/50"}>
+                        {row.waitroom > 0 ? row.waitroom : "—"}
+                      </span>
+                    </td>
+                    {/* Weekly metric cells */}
                     {row.weeks.slice(weekFrom, weekTo + 1).map((w, wi) => (
                       <td key={wi} className="px-3 py-2 text-right" style={{ minWidth: 90 }}>
                         <MetricCell value={getMetricValue(w, metric)} isPct={isPct} />

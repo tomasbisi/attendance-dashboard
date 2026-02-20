@@ -117,6 +117,19 @@ export function filterWeekly(
   });
 }
 
+export function getWeeklyMetrics(records: WeeklyRecord[]) {
+  const maxCapacity = records.reduce((s, r) => s + r.maxCapacity, 0);
+  const totalEnrolled = records.reduce((s, r) => s + r.totalEnrolled, 0);
+  const waitroom = records.reduce((s, r) => s + r.waitroom, 0);
+  // Latest attended = sum of most recent non-zero ADA per record
+  const latestAttended = records.reduce((s, r) => {
+    const latest = [...r.weeks].reverse().find((w) => w.ada > 0);
+    return s + (latest ? latest.ada : 0);
+  }, 0);
+  const enrollmentRate = maxCapacity > 0 ? Math.round((totalEnrolled / maxCapacity) * 100) : 0;
+  return { maxCapacity, totalEnrolled, waitroom, latestAttended, enrollmentRate };
+}
+
 export function getMetricValue(week: WeekData, metric: WeeklyMetric): number {
   if (metric === "enrollment") return week.enrollment;
   if (metric === "ada") return week.ada;
