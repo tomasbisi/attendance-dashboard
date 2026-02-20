@@ -55,6 +55,7 @@ export default function DashboardPage() {
   const [selectedDistrict, setSelectedDistrict] = useState("all");
 
   // ── Weekly filters ───────────────────────────────────────────────────────────
+  const [wSubView, setWSubView] = useState<"1to1" | "districts">("1to1");
   const [wDistrict, setWDistrict] = useState("all");
   const [wSchool, setWSchool] = useState("all");
   const [wActivity, setWActivity] = useState("all");
@@ -89,13 +90,29 @@ export default function DashboardPage() {
   const typeSummariesDistricts = useMemo(() => getTypeSummaries(filteredDistricts), [filteredDistricts]);
 
   // ── Derived: weekly ──────────────────────────────────────────────────────────
-  const weeklyOptions = useMemo(() => getWeeklyOptions(weeklyRecords), [weeklyRecords]);
+  const weekly1to1 = useMemo(
+    () => weeklyRecords.filter((r) => !r.district || r.district.trim() === ""),
+    [weeklyRecords],
+  );
+  const weeklyDistricts = useMemo(
+    () => weeklyRecords.filter((r) => r.district && r.district.trim() !== ""),
+    [weeklyRecords],
+  );
+  const hasWeekly1to1 = weekly1to1.length > 0;
+  const hasWeeklyDistricts = weeklyDistricts.length > 0;
+
+  // Active set based on sub-view (fall back gracefully if one side is empty)
+  const activeWeeklySet = wSubView === "districts" && hasWeeklyDistricts
+    ? weeklyDistricts
+    : weekly1to1;
+
+  const weeklyOptions = useMemo(() => getWeeklyOptions(activeWeeklySet), [activeWeeklySet]);
   const weekCount = weeklyOptions.weekLabels.length;
   const weekToActual = wWeekTo !== null ? wWeekTo : Math.max(0, weekCount - 1);
 
   const filteredWeekly = useMemo(
-    () => filterWeekly(weeklyRecords, wDistrict, wSchool, wActivity, wCategory),
-    [weeklyRecords, wDistrict, wSchool, wActivity, wCategory],
+    () => filterWeekly(activeWeeklySet, wDistrict, wSchool, wActivity, wCategory),
+    [activeWeeklySet, wDistrict, wSchool, wActivity, wCategory],
   );
 
   // ── Callbacks ────────────────────────────────────────────────────────────────
@@ -107,6 +124,7 @@ export default function DashboardPage() {
 
   const handleWeeklyLoaded = (records: WeeklyRecord[]) => {
     setWeeklyRecords(records);
+    setWSubView("1to1");
     setWDistrict("all");
     setWSchool("all");
     setWActivity("all");
@@ -114,6 +132,16 @@ export default function DashboardPage() {
     setWWeekFrom(0);
     setWWeekTo(null);
     if (records.length > 0) setView("weekly");
+  };
+
+  const switchWSubView = (sv: "1to1" | "districts") => {
+    setWSubView(sv);
+    setWDistrict("all");
+    setWSchool("all");
+    setWActivity("all");
+    setWCategory("all");
+    setWWeekFrom(0);
+    setWWeekTo(null);
   };
 
   const hasAttendance = rawData.length > 0;
@@ -267,9 +295,35 @@ export default function DashboardPage() {
         {/* Weekly Stats View */}
         {hasWeekly && safeView === "weekly" && (
           <>
+            {/* Weekly sub-tabs */}
+            {hasWeekly1to1 && hasWeeklyDistricts && (
+              <div className="flex gap-1 border-b">
+                <button
+                  onClick={() => switchWSubView("1to1")}
+                  className={`px-5 py-2 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${
+                    wSubView === "1to1"
+                      ? "bg-background text-foreground border-border"
+                      : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  1to1 Schools
+                </button>
+                <button
+                  onClick={() => switchWSubView("districts")}
+                  className={`px-5 py-2 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${
+                    wSubView === "districts"
+                      ? "bg-background text-foreground border-border"
+                      : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  Districts
+                </button>
+              </div>
+            )}
+
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-3">
-              {weeklyOptions.districts.length > 0 && (
+              {wSubView === "districts" && weeklyOptions.districts.length > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">District:</span>
                   <select
@@ -367,7 +421,7 @@ export default function DashboardPage() {
               </div>
 
               <span className="text-xs text-muted-foreground">
-                {filteredWeekly.length} of {weeklyRecords.length} rows
+                {filteredWeekly.length} of {activeWeeklySet.length} rows
               </span>
             </div>
 

@@ -16,6 +16,8 @@ export interface WeeklyRecord {
   category: string;
   type: string;
   maxCapacity: number;
+  totalEnrolled: number;
+  waitroom: number;
   weeks: WeekData[];
 }
 
@@ -24,19 +26,21 @@ export type WeeklyMetric = "enrollment" | "ada" | "attPct";
 // Parse raw 2D array from XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" })
 //
 // Row 0: [District, School Name, County, Activity, Category, Type, Max Capacity,
-//          "Jan 6 - Jan 10", "", "", "Jan 13 - Jan 17", "", "", ...]
+//          Total Enrolled, Waitroom, "Jan 6 - Jan 10", "", "", "Jan 13 - Jan 17", "", "", ...]
 // Row 1: [ignored fixed labels..., "Enrollment", "ADA", "Att%", "Enrollment", "ADA", "Att%", ...]
 // Row 2+: data
 //
-// Fixed columns 0-6, weeks start at column 7 (3 cols each: Enrollment, ADA, Att%)
+// Fixed columns 0-8, weeks start at column 9 (3 cols each: Enrollment, ADA, Att%)
+const WEEKS_START_COL = 9;
+
 export function parseWeeklyStats(rows: unknown[][]): WeeklyRecord[] {
   if (rows.length < 3) return [];
 
   const headerRow = rows[0] as (string | number | null | undefined)[];
 
-  // Collect week labels from col 7, 10, 13, ... (every 3rd col)
+  // Collect week labels from col 9, 12, 15, ... (every 3rd col)
   const weekLabels: string[] = [];
-  for (let c = 7; c < headerRow.length; c += 3) {
+  for (let c = WEEKS_START_COL; c < headerRow.length; c += 3) {
     const label = String(headerRow[c] ?? "").trim();
     weekLabels.push(label || `Week ${weekLabels.length + 1}`);
   }
@@ -67,11 +71,13 @@ export function parseWeeklyStats(rows: unknown[][]): WeeklyRecord[] {
     const category = String(row[4] ?? "").trim();
     const type = String(row[5] ?? "").trim();
     const maxCapacity = parseNum(row[6]);
+    const totalEnrolled = parseNum(row[7]);
+    const waitroom = parseNum(row[8]);
 
     if (!schoolName && !activity) continue;
 
     const weeks: WeekData[] = weekLabels.map((weekLabel, i) => {
-      const base = 7 + i * 3;
+      const base = WEEKS_START_COL + i * 3;
       return {
         weekLabel,
         enrollment: parseNum(row[base]),
@@ -80,7 +86,7 @@ export function parseWeeklyStats(rows: unknown[][]): WeeklyRecord[] {
       };
     });
 
-    records.push({ district, schoolName, county, activity, category, type, maxCapacity, weeks });
+    records.push({ district, schoolName, county, activity, category, type, maxCapacity, totalEnrolled, waitroom, weeks });
   }
 
   return records;
