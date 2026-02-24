@@ -56,7 +56,7 @@ import {
   getDayOfWeekStats,
 } from "@/lib/dailyService";
 
-type View = "1to1" | "districts" | "weekly" | "daily";
+type View = "overall" | "weekly" | "daily";
 
 export default function DashboardPage() {
   // ── Data state ──────────────────────────────────────────────────────────────
@@ -65,7 +65,8 @@ export default function DashboardPage() {
   const [dailyRecords, setDailyRecords] = useState<DailyRecord[]>([]);
 
   // ── Navigation ───────────────────────────────────────────────────────────────
-  const [view, setView] = useState<View>("1to1");
+  const [view, setView] = useState<View>("overall");
+  const [overallSubView, setOverallSubView] = useState<"1to1" | "districts">("1to1");
 
   // ── Attendance filters ───────────────────────────────────────────────────────
   const [selectedSchool, setSelectedSchool] = useState("all");
@@ -199,6 +200,12 @@ export default function DashboardPage() {
     if (records.length > 0) setView("daily");
   };
 
+  const switchOverallSubView = (sv: "1to1" | "districts") => {
+    setOverallSubView(sv);
+    setSelectedSchool("all");
+    setSelectedDistrict("all");
+  };
+
   const switchWSubView = (sv: "1to1" | "districts") => {
     setWSubView(sv);
     setWDistrict("all"); setWSchool("all"); setWActivity("all"); setWCategory("all");
@@ -211,16 +218,22 @@ export default function DashboardPage() {
     setDDateFromIdx(null); setDDateToIdx(null);
   };
 
+  const has1to1Data = data1to1.length > 0;
+  const hasDistrictsData = dataDistricts.length > 0;
+  const safeOverallSubView: "1to1" | "districts" =
+    has1to1Data && !hasDistrictsData ? "1to1"
+    : !has1to1Data && hasDistrictsData ? "districts"
+    : overallSubView;
+
   const hasAttendance = rawData.length > 0;
   const hasWeekly = weeklyRecords.length > 0;
   const hasDaily = dailyRecords.length > 0;
   const hasAny = hasAttendance || hasWeekly || hasDaily;
 
   const safeView: View =
-    view === "1to1" && !hasAttendance ? (hasDaily ? "daily" : hasWeekly ? "weekly" : "1to1")
-    : view === "districts" && !hasAttendance ? (hasDaily ? "daily" : hasWeekly ? "weekly" : "1to1")
-    : view === "weekly" && !hasWeekly ? (hasAttendance ? "1to1" : hasDaily ? "daily" : "1to1")
-    : view === "daily" && !hasDaily ? (hasAttendance ? "1to1" : hasWeekly ? "weekly" : "1to1")
+    view === "overall" && !hasAttendance ? (hasDaily ? "daily" : hasWeekly ? "weekly" : "overall")
+    : view === "weekly" && !hasWeekly ? (hasAttendance ? "overall" : hasDaily ? "daily" : "overall")
+    : view === "daily" && !hasDaily ? (hasAttendance ? "overall" : hasWeekly ? "weekly" : "overall")
     : view;
 
   const METRICS: WeeklyMetric[] = ["enrollment", "ada", "attPct"];
@@ -256,13 +269,8 @@ export default function DashboardPage() {
         <div className="bg-muted border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 pt-2">
             {hasAttendance && (
-              <button onClick={() => setView("1to1")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "1to1" ? "bg-background text-foreground border-border" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-background/50"}`}>
-                1to1 Schools
-              </button>
-            )}
-            {hasAttendance && (
-              <button onClick={() => setView("districts")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "districts" ? "bg-background text-foreground border-border" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-background/50"}`}>
-                Districts
+              <button onClick={() => setView("overall")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "overall" ? "bg-background text-foreground border-border" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-background/50"}`}>
+                Overall Stats
               </button>
             )}
             {hasWeekly && (
@@ -287,46 +295,58 @@ export default function DashboardPage() {
           onDailyLoaded={handleDailyLoaded}
         />
 
-        {/* 1to1 Schools View */}
-        {hasAttendance && safeView === "1to1" && (
+        {/* Overall Stats View */}
+        {hasAttendance && safeView === "overall" && (
           <>
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <Filters schools={schools} selectedSchool={selectedSchool} onSchoolChange={setSelectedSchool} />
-              <span className="text-xs text-muted-foreground">Showing {filtered1to1.length} of {data1to1.length} students</span>
-            </div>
-            <MetricCards {...metrics1to1} />
-            <AttendanceChart schoolData={schoolSummaries} />
-            <ActivityChart data={activitySummaries1to1} />
-            <CategoryChart data={categorySummaries1to1} />
-            <TypeChart data={typeSummaries1to1} />
-            <CountyPieChart data={countySummaries} />
-            <AttendanceTable data={filtered1to1} />
-            <ZeroAttendanceTable data={filtered1to1} />
-          </>
-        )}
-
-        {/* Districts View */}
-        {hasAttendance && safeView === "districts" && (
-          <>
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground">District:</span>
-                <select value={selectedDistrict} onChange={(e) => setSelectedDistrict(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-                  <option value="all">All Districts</option>
-                  {districts.map((d) => <option key={d} value={d}>{d}</option>)}
-                </select>
+            {has1to1Data && hasDistrictsData && (
+              <div className="flex gap-1 border-b">
+                <button onClick={() => switchOverallSubView("1to1")} className={subTabClass(safeOverallSubView === "1to1")}>1to1 Schools</button>
+                <button onClick={() => switchOverallSubView("districts")} className={subTabClass(safeOverallSubView === "districts")}>Districts</button>
               </div>
-              <span className="text-xs text-muted-foreground">Showing {filteredDistricts.length} of {dataDistricts.length} students</span>
-            </div>
-            <MetricCards {...metricsDistricts} />
-            <DistrictChart data={districtSummaries} />
-            <DistrictSchoolChart data={districtSchoolSummaries} />
-            <ActivityChart data={activitySummariesDistricts} />
-            <CategoryChart data={categorySummariesDistricts} />
-            <TypeChart data={typeSummariesDistricts} />
-            <DistrictSummaryTable data={districtSummaries} />
-            <AttendanceTable data={filteredDistricts} />
-            <ZeroAttendanceTable data={filteredDistricts} />
+            )}
+
+            {/* 1to1 sub-view */}
+            {safeOverallSubView === "1to1" && (
+              <>
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <Filters schools={schools} selectedSchool={selectedSchool} onSchoolChange={setSelectedSchool} />
+                  <span className="text-xs text-muted-foreground">Showing {filtered1to1.length} of {data1to1.length} students</span>
+                </div>
+                <MetricCards {...metrics1to1} />
+                <AttendanceChart schoolData={schoolSummaries} />
+                <ActivityChart data={activitySummaries1to1} />
+                <CategoryChart data={categorySummaries1to1} />
+                <TypeChart data={typeSummaries1to1} />
+                <CountyPieChart data={countySummaries} />
+                <AttendanceTable data={filtered1to1} />
+                <ZeroAttendanceTable data={filtered1to1} />
+              </>
+            )}
+
+            {/* Districts sub-view */}
+            {safeOverallSubView === "districts" && (
+              <>
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">District:</span>
+                    <select value={selectedDistrict} onChange={(e) => setSelectedDistrict(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+                      <option value="all">All Districts</option>
+                      {districts.map((d) => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                  <span className="text-xs text-muted-foreground">Showing {filteredDistricts.length} of {dataDistricts.length} students</span>
+                </div>
+                <MetricCards {...metricsDistricts} />
+                <DistrictChart data={districtSummaries} />
+                <DistrictSchoolChart data={districtSchoolSummaries} />
+                <ActivityChart data={activitySummariesDistricts} />
+                <CategoryChart data={categorySummariesDistricts} />
+                <TypeChart data={typeSummariesDistricts} />
+                <DistrictSummaryTable data={districtSummaries} />
+                <AttendanceTable data={filteredDistricts} />
+                <ZeroAttendanceTable data={filteredDistricts} />
+              </>
+            )}
           </>
         )}
 
