@@ -92,16 +92,16 @@ export function getDistrictData(data: AttendanceRecord[]): AttendanceRecord[] {
 
 export function filterData(
   data: AttendanceRecord[],
-  school: string
+  schools: string[]
 ): AttendanceRecord[] {
-  return data.filter((r) => school === "all" || r.schoolName === school);
+  return data.filter((r) => schools.length === 0 || schools.includes(r.schoolName));
 }
 
 export function filterByDistrict(
   data: AttendanceRecord[],
-  district: string
+  districts: string[]
 ): AttendanceRecord[] {
-  return data.filter((r) => district === "all" || r.district === district);
+  return data.filter((r) => districts.length === 0 || districts.includes(r.district));
 }
 
 export function getSchoolSummaries(data: AttendanceRecord[]): SchoolSummary[] {

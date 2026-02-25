@@ -12,6 +12,7 @@ import DistrictChart from "@/components/DistrictChart";
 import DistrictSummaryTable from "@/components/DistrictSummaryTable";
 import DistrictSchoolChart from "@/components/DistrictSchoolChart";
 import Filters from "@/components/Filters";
+import MultiSelect from "@/components/MultiSelect";
 import AttendanceTable from "@/components/AttendanceTable";
 import ZeroAttendanceTable from "@/components/ZeroAttendanceTable";
 import WeeklyTable from "@/components/WeeklyTable";
@@ -69,13 +70,13 @@ export default function DashboardPage() {
   const [overallSubView, setOverallSubView] = useState<"1to1" | "districts">("1to1");
 
   // ── Attendance filters ───────────────────────────────────────────────────────
-  const [selectedSchool, setSelectedSchool] = useState("all");
-  const [selectedDistrict, setSelectedDistrict] = useState("all");
+  const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
+  const [selectedDistricts, setSelectedDistricts] = useState<string[]>([]);
 
   // ── Weekly filters ───────────────────────────────────────────────────────────
   const [wSubView, setWSubView] = useState<"1to1" | "districts">("1to1");
-  const [wDistrict, setWDistrict] = useState("all");
-  const [wSchool, setWSchool] = useState("all");
+  const [wDistricts, setWDistricts] = useState<string[]>([]);
+  const [wSchools, setWSchools] = useState<string[]>([]);
   const [wActivity, setWActivity] = useState("all");
   const [wCategory, setWCategory] = useState("all");
   const [wMetric, setWMetric] = useState<WeeklyMetric>("enrollment");
@@ -85,9 +86,9 @@ export default function DashboardPage() {
 
   // ── Daily filters ────────────────────────────────────────────────────────────
   const [dSubView, setDSubView] = useState<"1to1" | "districts">("1to1");
-  const [dSchool, setDSchool] = useState("all");
+  const [dSchools, setDSchools] = useState<string[]>([]);
   const [dActivity, setDActivity] = useState("all");
-  const [dDistrict, setDDistrict] = useState("all");
+  const [dDistricts, setDDistricts] = useState<string[]>([]);
   const [dCategory, setDCategory] = useState("all");
   const [dView, setDView] = useState<"table" | "chart">("table");
   const [dDateFromIdx, setDDateFromIdx] = useState<number | null>(null); // null = auto last-20
@@ -99,8 +100,8 @@ export default function DashboardPage() {
   const schools = useMemo(() => getSchools(data1to1), [data1to1]);
   const districts = useMemo(() => getDistricts(dataDistricts), [dataDistricts]);
 
-  const filtered1to1 = useMemo(() => filterData(data1to1, selectedSchool), [data1to1, selectedSchool]);
-  const filteredDistricts = useMemo(() => filterByDistrict(dataDistricts, selectedDistrict), [dataDistricts, selectedDistrict]);
+  const filtered1to1 = useMemo(() => filterData(data1to1, selectedSchools), [data1to1, selectedSchools]);
+  const filteredDistricts = useMemo(() => filterByDistrict(dataDistricts, selectedDistricts), [dataDistricts, selectedDistricts]);
 
   const metrics1to1 = useMemo(() => getMetrics(filtered1to1), [filtered1to1]);
   const metricsDistricts = useMemo(() => getMetrics(filteredDistricts), [filteredDistricts]);
@@ -129,8 +130,8 @@ export default function DashboardPage() {
   const weekToActual = wWeekTo !== null ? wWeekTo : Math.max(0, weekCount - 1);
 
   const filteredWeekly = useMemo(
-    () => filterWeekly(activeWeeklySet, wDistrict, wSchool, wActivity, wCategory),
-    [activeWeeklySet, wDistrict, wSchool, wActivity, wCategory],
+    () => filterWeekly(activeWeeklySet, wDistricts, wSchools, wActivity, wCategory),
+    [activeWeeklySet, wDistricts, wSchools, wActivity, wCategory],
   );
   const weeklyMetrics = useMemo(() => getWeeklyMetrics(filteredWeekly), [filteredWeekly]);
 
@@ -144,8 +145,8 @@ export default function DashboardPage() {
   const dailyOptions = useMemo(() => getDailyOptions(activeDailySet), [activeDailySet]);
 
   const filteredDaily = useMemo(
-    () => filterDaily(activeDailySet, dSchool, dActivity, dDistrict, dCategory),
-    [activeDailySet, dSchool, dActivity, dDistrict, dCategory],
+    () => filterDaily(activeDailySet, dSchools, dActivity, dDistricts, dCategory),
+    [activeDailySet, dSchools, dActivity, dDistricts, dCategory],
   );
 
   const uniqueDates = useMemo(() => getUniqueDates(filteredDaily), [filteredDaily]);
@@ -172,15 +173,15 @@ export default function DashboardPage() {
   // ── Callbacks ────────────────────────────────────────────────────────────────
   const handleAttendanceLoaded = (data: AttendanceRecord[]) => {
     setRawData(data);
-    setSelectedSchool("all");
-    setSelectedDistrict("all");
+    setSelectedSchools([]);
+    setSelectedDistricts([]);
   };
 
   const handleWeeklyLoaded = (records: WeeklyRecord[]) => {
     setWeeklyRecords(records);
     setWSubView("1to1");
-    setWDistrict("all");
-    setWSchool("all");
+    setWDistricts([]);
+    setWSchools([]);
     setWActivity("all");
     setWCategory("all");
     setWWeekFrom(0);
@@ -191,9 +192,9 @@ export default function DashboardPage() {
   const handleDailyLoaded = (records: DailyRecord[]) => {
     setDailyRecords(records);
     setDSubView("1to1");
-    setDSchool("all");
+    setDSchools([]);
     setDActivity("all");
-    setDDistrict("all");
+    setDDistricts([]);
     setDCategory("all");
     setDDateFromIdx(null);
     setDDateToIdx(null);
@@ -202,19 +203,19 @@ export default function DashboardPage() {
 
   const switchOverallSubView = (sv: "1to1" | "districts") => {
     setOverallSubView(sv);
-    setSelectedSchool("all");
-    setSelectedDistrict("all");
+    setSelectedSchools([]);
+    setSelectedDistricts([]);
   };
 
   const switchWSubView = (sv: "1to1" | "districts") => {
     setWSubView(sv);
-    setWDistrict("all"); setWSchool("all"); setWActivity("all"); setWCategory("all");
+    setWDistricts([]); setWSchools([]); setWActivity("all"); setWCategory("all");
     setWWeekFrom(0); setWWeekTo(null);
   };
 
   const switchDSubView = (sv: "1to1" | "districts") => {
     setDSubView(sv);
-    setDSchool("all"); setDActivity("all"); setDDistrict("all"); setDCategory("all");
+    setDSchools([]); setDActivity("all"); setDDistricts([]); setDCategory("all");
     setDDateFromIdx(null); setDDateToIdx(null);
   };
 
@@ -309,7 +310,7 @@ export default function DashboardPage() {
             {safeOverallSubView === "1to1" && (
               <>
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                  <Filters schools={schools} selectedSchool={selectedSchool} onSchoolChange={setSelectedSchool} />
+                  <Filters schools={schools} selectedSchools={selectedSchools} onSchoolsChange={setSelectedSchools} />
                   <span className="text-xs text-muted-foreground">Showing {filtered1to1.length} of {data1to1.length} students</span>
                 </div>
                 <MetricCards {...metrics1to1} />
@@ -329,10 +330,12 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-muted-foreground">District:</span>
-                    <select value={selectedDistrict} onChange={(e) => setSelectedDistrict(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-                      <option value="all">All Districts</option>
-                      {districts.map((d) => <option key={d} value={d}>{d}</option>)}
-                    </select>
+                    <MultiSelect
+                      options={districts}
+                      selected={selectedDistricts}
+                      onChange={setSelectedDistricts}
+                      placeholder="All Districts"
+                    />
                   </div>
                   <span className="text-xs text-muted-foreground">Showing {filteredDistricts.length} of {dataDistricts.length} students</span>
                 </div>
@@ -364,18 +367,22 @@ export default function DashboardPage() {
               {wSubView === "districts" && weeklyOptions.districts.length > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">District:</span>
-                  <select value={wDistrict} onChange={(e) => setWDistrict(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-                    <option value="all">All</option>
-                    {weeklyOptions.districts.map((d) => <option key={d} value={d}>{d}</option>)}
-                  </select>
+                  <MultiSelect
+                    options={weeklyOptions.districts}
+                    selected={wDistricts}
+                    onChange={setWDistricts}
+                    placeholder="All Districts"
+                  />
                 </div>
               )}
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">School:</span>
-                <select value={wSchool} onChange={(e) => setWSchool(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-                  <option value="all">All</option>
-                  {weeklyOptions.schools.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
+                <MultiSelect
+                  options={weeklyOptions.schools}
+                  selected={wSchools}
+                  onChange={setWSchools}
+                  placeholder="All Schools"
+                />
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">Activity:</span>
@@ -441,18 +448,22 @@ export default function DashboardPage() {
               {dSubView === "districts" && dailyOptions.districts.length > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">District:</span>
-                  <select value={dDistrict} onChange={(e) => setDDistrict(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-                    <option value="all">All</option>
-                    {dailyOptions.districts.map((d) => <option key={d} value={d}>{d}</option>)}
-                  </select>
+                  <MultiSelect
+                    options={dailyOptions.districts}
+                    selected={dDistricts}
+                    onChange={setDDistricts}
+                    placeholder="All Districts"
+                  />
                 </div>
               )}
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">School:</span>
-                <select value={dSchool} onChange={(e) => setDSchool(e.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-                  <option value="all">All</option>
-                  {dailyOptions.schools.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
+                <MultiSelect
+                  options={dailyOptions.schools}
+                  selected={dSchools}
+                  onChange={setDSchools}
+                  placeholder="All Schools"
+                />
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">Activity:</span>

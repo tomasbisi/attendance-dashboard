@@ -103,14 +103,14 @@ export function getWeeklyOptions(records: WeeklyRecord[]) {
 
 export function filterWeekly(
   records: WeeklyRecord[],
-  district: string,
-  school: string,
+  districts: string[],
+  schools: string[],
   activity: string,
   category: string,
 ): WeeklyRecord[] {
   return records.filter((r) => {
-    if (district !== "all" && r.district !== district) return false;
-    if (school !== "all" && r.schoolName !== school) return false;
+    if (districts.length > 0 && !districts.includes(r.district)) return false;
+    if (schools.length > 0 && !schools.includes(r.schoolName)) return false;
     if (activity !== "all" && r.activity !== activity) return false;
     if (category !== "all" && r.category !== category) return false;
     return true;

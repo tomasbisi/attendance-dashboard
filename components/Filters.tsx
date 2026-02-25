@@ -1,36 +1,23 @@
 "use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import MultiSelect from "@/components/MultiSelect";
 
 interface FiltersProps {
   schools: string[];
-  selectedSchool: string;
-  onSchoolChange: (value: string) => void;
+  selectedSchools: string[];
+  onSchoolsChange: (value: string[]) => void;
 }
 
-export default function Filters({ schools, selectedSchool, onSchoolChange }: FiltersProps) {
+export default function Filters({ schools, selectedSchools, onSchoolsChange }: FiltersProps) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-sm font-medium text-muted-foreground">School:</span>
-      <Select value={selectedSchool} onValueChange={onSchoolChange}>
-        <SelectTrigger className="w-48">
-          <SelectValue placeholder="All Schools" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Schools</SelectItem>
-          {schools.map((school) => (
-            <SelectItem key={school} value={school}>
-              {school}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <MultiSelect
+        options={schools}
+        selected={selectedSchools}
+        onChange={onSchoolsChange}
+        placeholder="All Schools"
+      />
     </div>
   );
 }

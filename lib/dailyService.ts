@@ -154,15 +154,15 @@ export function getDailyOptions(records: DailyRecord[]) {
 
 export function filterDaily(
   records: DailyRecord[],
-  school: string,
+  schools: string[],
   activity: string,
-  district: string,
+  districts: string[],
   category: string
 ): DailyRecord[] {
   return records.filter((r) => {
-    if (school !== "all" && r.schoolName !== school) return false;
+    if (schools.length > 0 && !schools.includes(r.schoolName)) return false;
     if (activity !== "all" && r.activity !== activity) return false;
-    if (district !== "all" && r.district !== district) return false;
+    if (districts.length > 0 && !districts.includes(r.district)) return false;
     if (category !== "all" && r.category !== category) return false;
     return true;
   });
