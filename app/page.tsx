@@ -112,7 +112,7 @@ export default function DashboardPage() {
   const typeSummaries1to1 = useMemo(() => getTypeSummaries(filtered1to1), [filtered1to1]);
   const countySummaries = useMemo(() => getCountySummaries(filtered1to1), [filtered1to1]);
 
-  const districtSummaries = useMemo(() => getDistrictSummaries(dataDistricts), [dataDistricts]);
+  const districtSummaries = useMemo(() => getDistrictSummaries(filteredDistricts), [filteredDistricts]);
   const districtSchoolSummaries = useMemo(() => getSchoolSummaries(filteredDistricts), [filteredDistricts]);
   const activitySummariesDistricts = useMemo(() => getActivitySummaries(filteredDistricts), [filteredDistricts]);
   const categorySummariesDistricts = useMemo(() => getCategorySummaries(filteredDistricts), [filteredDistricts]);
