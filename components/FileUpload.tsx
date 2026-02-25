@@ -20,91 +20,15 @@ interface ZoneState {
   dragging: boolean;
 }
 
-function UploadZone({
-  label,
-  hint,
-  state,
-  inputRef,
-  onFile,
-  onClear,
-  onDragOver,
-  onDragLeave,
-  onDrop,
-}: {
-  label: string;
-  hint: string;
-  state: ZoneState;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  onFile: (file: File) => void;
-  onClear: () => void;
-  onDragOver: () => void;
-  onDragLeave: () => void;
-  onDrop: (e: React.DragEvent) => void;
-}) {
-  const loaded = !!state.fileName;
-
-  return (
-    <div
-      className={`flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-5 transition-colors cursor-pointer
-        ${state.dragging ? "border-primary bg-primary/5" : loaded ? "border-primary/40 bg-primary/5" : "border-muted-foreground/30 hover:border-muted-foreground/50"}`}
-      onClick={() => !loaded && inputRef.current?.click()}
-      onDragOver={(e) => { e.preventDefault(); onDragOver(); }}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
-    >
-      {loaded ? (
-        <>
-          <CheckCircle2 className="h-6 w-6 text-primary" />
-          <div className="flex items-center gap-2">
-            <FileSpreadsheet className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary truncate max-w-[160px]">{state.fileName}</span>
-            <button
-              onClick={(e) => { e.stopPropagation(); onClear(); }}
-              className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <span className="text-xs text-primary font-medium">{label} loaded</span>
-        </>
-      ) : (
-        <>
-          <Upload className="h-6 w-6 text-muted-foreground" />
-          <div className="text-center">
-            <p className="text-sm font-medium">{label}</p>
-            <p className="text-xs text-muted-foreground mt-1">{hint}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Drag &amp; drop or click to browse</p>
-          </div>
-        </>
-      )}
-      {state.error && (
-        <p className="text-xs text-destructive text-center">{state.error}</p>
-      )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".xlsx,.xls,.csv"
-        className="hidden"
-        onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }}
-      />
-    </div>
-  );
-}
-
 export default function FileUpload({ onAttendanceLoaded, onWeeklyLoaded, onDailyLoaded }: FileUploadProps) {
-  const attendanceRef = useRef<HTMLInputElement>(null);
-  const weeklyRef = useRef<HTMLInputElement>(null);
-  const dailyRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [attendanceState, setAttendanceState] = useState<ZoneState>({ fileName: null, error: null, dragging: false });
   const [weeklyState, setWeeklyState] = useState<ZoneState>({ fileName: null, error: null, dragging: false });
   const [dailyState, setDailyState] = useState<ZoneState>({ fileName: null, error: null, dragging: false });
+  const [draggingOver, setDraggingOver] = useState(false);
 
   const processAttendance = (file: File) => {
-    if (!file.name.match(/\.(xlsx|xls|csv)$/i)) {
-      setAttendanceState((s) => ({ ...s, error: "Please upload an Excel (.xlsx, .xls) or CSV file." }));
-      return;
-    }
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -131,10 +55,6 @@ export default function FileUpload({ onAttendanceLoaded, onWeeklyLoaded, onDaily
   };
 
   const processWeekly = (file: File) => {
-    if (!file.name.match(/\.(xlsx|xls|csv)$/i)) {
-      setWeeklyState((s) => ({ ...s, error: "Please upload an Excel (.xlsx, .xls) or CSV file." }));
-      return;
-    }
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -159,10 +79,6 @@ export default function FileUpload({ onAttendanceLoaded, onWeeklyLoaded, onDaily
   };
 
   const processDaily = (file: File) => {
-    if (!file.name.match(/\.(xlsx|xls|csv)$/i)) {
-      setDailyState((s) => ({ ...s, error: "Please upload an Excel (.xlsx, .xls) or CSV file." }));
-      return;
-    }
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -187,8 +103,8 @@ export default function FileUpload({ onAttendanceLoaded, onWeeklyLoaded, onDaily
     reader.readAsArrayBuffer(file);
   };
 
-  // Auto-detect file type by name
   const autoRoute = (file: File, forceZone?: "attendance" | "weekly" | "daily") => {
+    if (!file.name.match(/\.(xlsx|xls|csv)$/i)) return;
     const name = file.name.toLowerCase();
     const zone =
       forceZone ??
@@ -198,67 +114,114 @@ export default function FileUpload({ onAttendanceLoaded, onWeeklyLoaded, onDaily
     else processAttendance(file);
   };
 
+  const handleFiles = (files: File[]) => {
+    files.forEach((f) => autoRoute(f));
+  };
+
   const clearAttendance = () => {
     setAttendanceState({ fileName: null, error: null, dragging: false });
-    if (attendanceRef.current) attendanceRef.current.value = "";
     onAttendanceLoaded([]);
   };
   const clearWeekly = () => {
     setWeeklyState({ fileName: null, error: null, dragging: false });
-    if (weeklyRef.current) weeklyRef.current.value = "";
     onWeeklyLoaded([]);
   };
   const clearDaily = () => {
     setDailyState({ fileName: null, error: null, dragging: false });
-    if (dailyRef.current) dailyRef.current.value = "";
     onDailyLoaded([]);
   };
 
-  const makeDropHandler = (zone: "attendance" | "weekly" | "daily", setState: React.Dispatch<React.SetStateAction<ZoneState>>) =>
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setState((s) => ({ ...s, dragging: false }));
-      const f = e.dataTransfer.files?.[0];
-      if (f) autoRoute(f, zone);
-    };
+  const loadedCount = [attendanceState, weeklyState, dailyState].filter((s) => s.fileName).length;
+  const allLoaded = loadedCount === 3;
+
+  const fileRows: {
+    label: string;
+    hint: string;
+    state: ZoneState;
+    onClear: () => void;
+  }[] = [
+    { label: "School Records", hint: "school_records.xlsx", state: attendanceState, onClear: clearAttendance },
+    { label: "Weekly Stats", hint: "weekly_stats.xlsx", state: weeklyState, onClear: clearWeekly },
+    { label: "Daily Attendance", hint: "daily_attendance.xlsx", state: dailyState, onClear: clearDaily },
+  ];
 
   return (
     <Card>
-      <CardContent className="pt-4 pb-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <UploadZone
-            label="School Records"
-            hint="school_records.xlsx"
-            state={attendanceState}
-            inputRef={attendanceRef}
-            onFile={(f) => autoRoute(f, "attendance")}
-            onClear={clearAttendance}
-            onDragOver={() => setAttendanceState((s) => ({ ...s, dragging: true }))}
-            onDragLeave={() => setAttendanceState((s) => ({ ...s, dragging: false }))}
-            onDrop={makeDropHandler("attendance", setAttendanceState)}
+      <CardContent className="pt-4 pb-4 space-y-3">
+        {/* Combined drop zone */}
+        <div
+          className={`flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-6 transition-colors cursor-pointer
+            ${draggingOver ? "border-primary bg-primary/5" : allLoaded ? "border-primary/40 bg-primary/5" : "border-muted-foreground/30 hover:border-muted-foreground/50"}`}
+          onClick={() => inputRef.current?.click()}
+          onDragOver={(e) => { e.preventDefault(); setDraggingOver(true); }}
+          onDragLeave={() => setDraggingOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDraggingOver(false);
+            handleFiles(Array.from(e.dataTransfer.files));
+          }}
+        >
+          {allLoaded ? (
+            <CheckCircle2 className="h-7 w-7 text-primary" />
+          ) : (
+            <Upload className="h-7 w-7 text-muted-foreground" />
+          )}
+          <div className="text-center">
+            <p className="text-sm font-semibold">
+              {allLoaded ? "All files loaded" : "Drop all files here, or click to browse"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Select up to 3 files at once &mdash; school_records &middot; weekly_stats &middot; daily_attendance
+            </p>
+          </div>
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              const files = Array.from(e.target.files ?? []);
+              if (files.length > 0) handleFiles(files);
+              e.target.value = "";
+            }}
           />
-          <UploadZone
-            label="Weekly Stats"
-            hint="weekly_stats.xlsx"
-            state={weeklyState}
-            inputRef={weeklyRef}
-            onFile={(f) => autoRoute(f, "weekly")}
-            onClear={clearWeekly}
-            onDragOver={() => setWeeklyState((s) => ({ ...s, dragging: true }))}
-            onDragLeave={() => setWeeklyState((s) => ({ ...s, dragging: false }))}
-            onDrop={makeDropHandler("weekly", setWeeklyState)}
-          />
-          <UploadZone
-            label="Daily Attendance"
-            hint="daily_attendance.xlsx"
-            state={dailyState}
-            inputRef={dailyRef}
-            onFile={(f) => autoRoute(f, "daily")}
-            onClear={clearDaily}
-            onDragOver={() => setDailyState((s) => ({ ...s, dragging: true }))}
-            onDragLeave={() => setDailyState((s) => ({ ...s, dragging: false }))}
-            onDrop={makeDropHandler("daily", setDailyState)}
-          />
+        </div>
+
+        {/* Per-file status rows */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {fileRows.map(({ label, hint, state, onClear }) => (
+            <div
+              key={label}
+              className={`flex items-center gap-2.5 rounded-md border px-3 py-2 text-sm transition-colors
+                ${state.fileName ? "border-primary/40 bg-primary/5" : "border-border bg-muted/30"}`}
+            >
+              {state.fileName ? (
+                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+              ) : (
+                <FileSpreadsheet className="h-4 w-4 text-muted-foreground shrink-0" />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className={`font-medium truncate leading-tight ${state.fileName ? "text-primary" : "text-muted-foreground"}`}>
+                  {label}
+                </p>
+                <p className="text-xs text-muted-foreground truncate leading-tight">
+                  {state.fileName ?? hint}
+                </p>
+                {state.error && (
+                  <p className="text-xs text-destructive leading-tight">{state.error}</p>
+                )}
+              </div>
+              {state.fileName && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onClear(); }}
+                  className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
