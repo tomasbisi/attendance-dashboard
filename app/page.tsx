@@ -23,6 +23,8 @@ import DailyChart from "@/components/DailyChart";
 import DailyMetricCards from "@/components/DailyMetricCards";
 import DayOfWeekChart from "@/components/DayOfWeekChart";
 import DayOfWeekTable from "@/components/DayOfWeekTable";
+import InsightsTable from "@/components/InsightsTable";
+import { generateInsights } from "@/lib/insightsService";
 import {
   AttendanceRecord,
   filterData,
@@ -57,7 +59,7 @@ import {
   getDayOfWeekStats,
 } from "@/lib/dailyService";
 
-type View = "overall" | "weekly" | "daily";
+type View = "overall" | "weekly" | "daily" | "insights";
 
 export default function DashboardPage() {
   // ── Data state ──────────────────────────────────────────────────────────────
@@ -170,6 +172,12 @@ export default function DashboardPage() {
 
   const dayOfWeekStats = useMemo(() => getDayOfWeekStats(filteredDaily), [filteredDaily]);
 
+  // ── Insights ─────────────────────────────────────────────────────────────────
+  const insights = useMemo(
+    () => generateInsights(data1to1, dataDistricts, weeklyRecords, dailyRecords),
+    [data1to1, dataDistricts, weeklyRecords, dailyRecords],
+  );
+
   // ── Callbacks ────────────────────────────────────────────────────────────────
   const handleAttendanceLoaded = (data: AttendanceRecord[]) => {
     setRawData(data);
@@ -235,6 +243,7 @@ export default function DashboardPage() {
     view === "overall" && !hasAttendance ? (hasDaily ? "daily" : hasWeekly ? "weekly" : "overall")
     : view === "weekly" && !hasWeekly ? (hasAttendance ? "overall" : hasDaily ? "daily" : "overall")
     : view === "daily" && !hasDaily ? (hasAttendance ? "overall" : hasWeekly ? "weekly" : "overall")
+    : view === "insights" && !hasAny ? "overall"
     : view;
 
   const METRICS: WeeklyMetric[] = ["enrollment", "ada", "attPct"];
@@ -284,6 +293,9 @@ export default function DashboardPage() {
                 Daily Stats
               </button>
             )}
+            <button onClick={() => setView("insights")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "insights" ? "bg-background text-foreground border-border" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-background/50"}`}>
+              Insights {insights.length > 0 && <span className="ml-1 inline-flex items-center justify-center h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-bold">{insights.filter(i => i.severity === "critical").length}</span>}
+            </button>
           </div>
         </div>
       )}
@@ -534,6 +546,11 @@ export default function DashboardPage() {
               </div>
             </div>
           </>
+        )}
+
+        {/* Insights View */}
+        {safeView === "insights" && (
+          <InsightsTable insights={insights} />
         )}
 
         {!hasAny && (
