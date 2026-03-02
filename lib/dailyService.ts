@@ -279,6 +279,7 @@ export interface DayOfWeekRow {
   school: string;
   days: Record<DayKey, DayStats>;
   bestDay: DayKey | "";
+  worstDay: DayKey | "";
 }
 
 export function getDayOfWeekStats(records: DailyRecord[]): DayOfWeekRow[] {
@@ -302,6 +303,8 @@ export function getDayOfWeekStats(records: DailyRecord[]): DayOfWeekRow[] {
     .map(([school, dayData]) => {
       let bestDay: DayKey | "" = "";
       let bestRate = -1;
+      let worstDay: DayKey | "" = "";
+      let worstRate = 101;
       const days = {} as Record<DayKey, DayStats>;
 
       for (const day of DAY_ORDER) {
@@ -309,9 +312,10 @@ export function getDayOfWeekStats(records: DailyRecord[]): DayOfWeekRow[] {
         const rate = d.possible > 0 ? Math.round((d.attended / d.possible) * 100) : 0;
         days[day] = { ...d, rate };
         if (d.possible > 0 && rate > bestRate) { bestRate = rate; bestDay = day; }
+        if (d.possible > 0 && rate < worstRate) { worstRate = rate; worstDay = day; }
       }
 
-      return { school, days, bestDay };
+      return { school, days, bestDay, worstDay };
     })
     .sort((a, b) => a.school.localeCompare(b.school));
 }
