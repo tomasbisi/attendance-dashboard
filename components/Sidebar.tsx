@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { BarChart2 } from "lucide-react";
 
@@ -39,6 +40,17 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Logo */}
+      <div className="px-4 py-4 border-t flex justify-center">
+        <Image
+          src="/hokali.jpg"
+          alt="HOKALI"
+          width={120}
+          height={40}
+          className="object-contain"
+        />
+      </div>
     </aside>
   );
 }
