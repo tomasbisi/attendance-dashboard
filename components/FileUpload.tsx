@@ -58,7 +58,7 @@ export default function FileUpload({
     const formData = new FormData();
     formData.append("file", file);
     try {
-      const res = await fetch(`${process.env.API_URL}/api/upload/attendance`, {
+      const res = await fetch(`/api/upload/attendance`, {
         method: "POST",
         body: formData,
       });
@@ -93,7 +93,7 @@ export default function FileUpload({
     const formData = new FormData();
     formData.append("file", file);
     try {
-      const res = await fetch(`${process.env.API_URL}/api/upload/weekly`, {
+      const res = await fetch(`/api/upload/weekly`, {
         method: "POST",
         body: formData,
       });
@@ -128,7 +128,7 @@ export default function FileUpload({
     const formData = new FormData();
     formData.append("file", file);
     try {
-      const res = await fetch(`${process.env.API_URL}/api/upload/daily`, {
+      const res = await fetch(`/api/upload/daily`, {
         method: "POST",
         body: formData,
       });
