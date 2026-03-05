@@ -15,6 +15,7 @@ import Filters from "@/components/Filters";
 import MultiSelect from "@/components/MultiSelect";
 import AttendanceTable from "@/components/AttendanceTable";
 import ZeroAttendanceTable from "@/components/ZeroAttendanceTable";
+import LowEngagementTable from "@/components/LowEngagementTable";
 import WeeklyTable from "@/components/WeeklyTable";
 import WeeklyLineChart from "@/components/WeeklyLineChart";
 import WeeklyMetricCards from "@/components/WeeklyMetricCards";
@@ -323,6 +324,7 @@ export default function DashboardPage() {
                 <CountyPieChart data={countySummaries} />
                 <AttendanceTable data={filtered1to1} />
                 <ZeroAttendanceTable data={filtered1to1} />
+                <LowEngagementTable data={schoolSummaries} />
               </>
             )}
 
@@ -350,6 +352,7 @@ export default function DashboardPage() {
                 <DistrictSummaryTable data={districtSummaries} />
                 <AttendanceTable data={filteredDistricts} />
                 <ZeroAttendanceTable data={filteredDistricts} />
+                <LowEngagementTable data={districtSchoolSummaries} />
               </>
             )}
           </>
