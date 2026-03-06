@@ -259,15 +259,15 @@ export default function DashboardPage() {
   const subTabClass = (active: boolean) =>
     `px-5 py-2 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${
       active
-        ? "bg-background text-foreground border-border"
-        : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/50"
+        ? "bg-card text-foreground border-border"
+        : "bg-card text-muted-foreground border-border/50 hover:text-foreground"
     }`;
 
   return (
     <div className="min-h-screen bg-background">
       {/* View Navigation */}
       {hasAny && (
-        <div className="bg-muted border-b">
+        <div className="bg-card border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 pt-2">
             {hasAttendance && (
               <button onClick={() => setView("overall")} className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-colors border border-b-0 ${safeView === "overall" ? "bg-background text-foreground border-border" : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-background/50"}`}>
