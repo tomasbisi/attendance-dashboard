@@ -28,8 +28,11 @@ function isBlankRow(row: unknown[]): boolean {
   return row.every((cell) => !String(cell ?? "").trim());
 }
 
-// A section header row has pipe-separated content in col 0, all other cells empty
-// (XLSX reads merged cells: only the first cell has the value)
+// A section header row has pipe-separated content in col 0, all other cells empty.
+// In the Excel file, this row is a horizontally merged cell spanning the full width.
+// When XLSX parses merged cells, only the first cell (col 0) holds the value — the
+// rest appear as empty strings — so we check that col 0 has pipe-separated content
+// and all other cells are blank.
 function isSectionHeader(row: unknown[]): boolean {
   const first = String(row[0] ?? "").trim();
   return (
@@ -239,7 +242,10 @@ export function parseDateLabel(label: string): Date | null {
   const month = MONTH_MAP[match[1]];
   if (month === undefined) return null;
   const day = parseInt(match[2]);
-  // Sep–Dec → 2025, Jan+ → 2026
+  // Year is inferred from the school-year calendar (Sep–Aug).
+  // Sessions from September onward fall in the fall semester (2025),
+  // while January–August sessions fall in the spring semester (2026).
+  // Update these hardcoded years at the start of each new school year.
   const year = month >= 8 ? 2025 : 2026;
   return new Date(year, month, day);
 }
