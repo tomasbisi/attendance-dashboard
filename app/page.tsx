@@ -13,6 +13,7 @@ import DistrictSummaryTable from "@/components/DistrictSummaryTable";
 import DistrictSchoolChart from "@/components/DistrictSchoolChart";
 import Filters from "@/components/Filters";
 import MultiSelect from "@/components/MultiSelect";
+import BookingIdSearch from "@/components/BookingIdSearch";
 import AttendanceTable from "@/components/AttendanceTable";
 import ZeroAttendanceTable from "@/components/ZeroAttendanceTable";
 import LowEngagementTable from "@/components/LowEngagementTable";
@@ -71,7 +72,7 @@ export default function DashboardPage() {
 
   // ── Navigation ───────────────────────────────────────────────────────────────
   const [view, setView] = useState<View>("overall");
-  const [overallSubView, setOverallSubView] = useState<"1to1" | "districts">("1to1");
+  const [overallSubView, setOverallSubView] = useState<"1to1" | "districts">("districts");
 
   // ── Attendance filters ───────────────────────────────────────────────────────
   const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
@@ -82,7 +83,7 @@ export default function DashboardPage() {
   const [selectedBookingIdsDistricts, setSelectedBookingIdsDistricts] = useState<string[]>([]);
 
   // ── Weekly filters ───────────────────────────────────────────────────────────
-  const [wSubView, setWSubView] = useState<"1to1" | "districts">("1to1");
+  const [wSubView, setWSubView] = useState<"1to1" | "districts">("districts");
   const [wDistricts, setWDistricts] = useState<string[]>([]);
   const [wSchools, setWSchools] = useState<string[]>([]);
   const [wActivity, setWActivity] = useState("all");
@@ -95,7 +96,7 @@ export default function DashboardPage() {
   const [wWeekTo, setWWeekTo] = useState<number | null>(null);
 
   // ── Daily filters ────────────────────────────────────────────────────────────
-  const [dSubView, setDSubView] = useState<"1to1" | "districts">("1to1");
+  const [dSubView, setDSubView] = useState<"1to1" | "districts">("districts");
   const [dSchools, setDSchools] = useState<string[]>([]);
   const [dActivity, setDActivity] = useState("all");
   const [dDistricts, setDDistricts] = useState<string[]>([]);
@@ -105,6 +106,7 @@ export default function DashboardPage() {
   const [dView, setDView] = useState<"table" | "chart">("table");
   const [dDateFromIdx, setDDateFromIdx] = useState<number | null>(null); // null = auto last-20
   const [dDateToIdx, setDDateToIdx] = useState<number | null>(null);    // null = last
+  const [dTableUnlocked, setDTableUnlocked] = useState(false);
 
   // ── Derived: attendance ──────────────────────────────────────────────────────
   const data1to1 = useMemo(() => get1to1Data(rawData), [rawData]);
@@ -237,7 +239,7 @@ export default function DashboardPage() {
 
   const handleWeeklyLoaded = (records: WeeklyRecord[]) => {
     setWeeklyRecords(records);
-    setWSubView("1to1");
+    setWSubView("districts");
     setWDistricts([]);
     setWSchools([]);
     setWActivity("all");
@@ -251,7 +253,7 @@ export default function DashboardPage() {
 
   const handleDailyLoaded = (records: DailyRecord[]) => {
     setDailyRecords(records);
-    setDSubView("1to1");
+    setDSubView("districts");
     setDSchools([]);
     setDActivity("all");
     setDDistricts([]);
@@ -260,6 +262,7 @@ export default function DashboardPage() {
     setDBookingIds([]);
     setDDateFromIdx(null);
     setDDateToIdx(null);
+    setDTableUnlocked(false);
     if (records.length > 0) setView("daily");
   };
 
@@ -285,13 +288,14 @@ export default function DashboardPage() {
     setDSchools([]); setDActivity("all"); setDDistricts([]); setDCategory("all");
     setDGrades([]); setDBookingIds([]);
     setDDateFromIdx(null); setDDateToIdx(null);
+    setDTableUnlocked(false);
   };
 
   const has1to1Data = data1to1.length > 0;
   const hasDistrictsData = dataDistricts.length > 0;
   const safeOverallSubView: "1to1" | "districts" =
-    has1to1Data && !hasDistrictsData ? "1to1"
-    : !has1to1Data && hasDistrictsData ? "districts"
+    !has1to1Data && hasDistrictsData ? "districts"
+    : has1to1Data && !hasDistrictsData ? "1to1"
     : overallSubView;
 
   const hasAttendance = rawData.length > 0;
@@ -363,8 +367,8 @@ export default function DashboardPage() {
           <>
             {has1to1Data && hasDistrictsData && (
               <div className="flex gap-1 border-b">
-                <button onClick={() => switchOverallSubView("1to1")} className={subTabClass(safeOverallSubView === "1to1")}>1to1 Schools</button>
                 <button onClick={() => switchOverallSubView("districts")} className={subTabClass(safeOverallSubView === "districts")}>Districts</button>
+                <button onClick={() => switchOverallSubView("1to1")} className={subTabClass(safeOverallSubView === "1to1")}>1to1 Schools</button>
               </div>
             )}
 
@@ -383,7 +387,7 @@ export default function DashboardPage() {
                     {bookingIds1to1.length > 0 && (
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-muted-foreground">Booking ID:</span>
-                        <MultiSelect options={bookingIds1to1} selected={selectedBookingIds1to1} onChange={setSelectedBookingIds1to1} placeholder="All Booking IDs" />
+                        <BookingIdSearch options={bookingIds1to1} selected={selectedBookingIds1to1} onChange={setSelectedBookingIds1to1} />
                       </div>
                     )}
                   </div>
@@ -425,7 +429,7 @@ export default function DashboardPage() {
                     {bookingIdsDistricts.length > 0 && (
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-muted-foreground">Booking ID:</span>
-                        <MultiSelect options={bookingIdsDistricts} selected={selectedBookingIdsDistricts} onChange={setSelectedBookingIdsDistricts} placeholder="All Booking IDs" />
+                        <BookingIdSearch options={bookingIdsDistricts} selected={selectedBookingIdsDistricts} onChange={setSelectedBookingIdsDistricts} />
                       </div>
                     )}
                   </div>
@@ -452,8 +456,8 @@ export default function DashboardPage() {
           <>
             {hasWeekly1to1 && hasWeeklyDistricts && (
               <div className="flex gap-1 border-b">
-                <button onClick={() => switchWSubView("1to1")} className={subTabClass(wSubView === "1to1")}>1to1 Schools</button>
                 <button onClick={() => switchWSubView("districts")} className={subTabClass(wSubView === "districts")}>Districts</button>
+                <button onClick={() => switchWSubView("1to1")} className={subTabClass(wSubView === "1to1")}>1to1 Schools</button>
               </div>
             )}
             <WeeklyMetricCards {...weeklyMetrics} />
@@ -503,7 +507,7 @@ export default function DashboardPage() {
               {weeklyOptions.bookingIds.length > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">Booking ID:</span>
-                  <MultiSelect options={weeklyOptions.bookingIds} selected={wBookingIds} onChange={setWBookingIds} placeholder="All Booking IDs" />
+                  <BookingIdSearch options={weeklyOptions.bookingIds} selected={wBookingIds} onChange={setWBookingIds} />
                 </div>
               )}
             </div>
@@ -544,8 +548,8 @@ export default function DashboardPage() {
           <>
             {hasDaily1to1 && hasDailyDistricts && (
               <div className="flex gap-1 border-b">
-                <button onClick={() => switchDSubView("1to1")} className={subTabClass(dSubView === "1to1")}>1to1 Schools</button>
                 <button onClick={() => switchDSubView("districts")} className={subTabClass(dSubView === "districts")}>Districts</button>
+                <button onClick={() => switchDSubView("1to1")} className={subTabClass(dSubView === "1to1")}>1to1 Schools</button>
               </div>
             )}
             <DailyMetricCards {...dailyMetrics} />
@@ -596,7 +600,7 @@ export default function DashboardPage() {
               {dailyOptions.bookingIds.length > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">Booking ID:</span>
-                  <MultiSelect options={dailyOptions.bookingIds} selected={dBookingIds} onChange={setDBookingIds} placeholder="All Booking IDs" />
+                  <BookingIdSearch options={dailyOptions.bookingIds} selected={dBookingIds} onChange={setDBookingIds} />
                 </div>
               )}
             </div>
@@ -631,12 +635,28 @@ export default function DashboardPage() {
               </span>
             </div>
             {dView === "table" ? (
-              <DailyTable
-                data={filteredDaily.slice(0, 200)}
-                allDates={uniqueDates}
-                dateFromIdx={dDateFromActual}
-                dateToIdx={dDateToActual}
-              />
+              dSchools.length > 0 || dDistricts.length > 0 || dBookingIds.length > 0 || dTableUnlocked ? (
+                <DailyTable
+                  data={filteredDaily.slice(0, 200)}
+                  allDates={uniqueDates}
+                  dateFromIdx={dDateFromActual}
+                  dateToIdx={dDateToActual}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-muted-foreground/30 py-16 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    {dSubView === "districts"
+                      ? "Select a district or school above to load the attendance table."
+                      : "Select a school above to load the attendance table."}
+                  </p>
+                  <button
+                    onClick={() => setDTableUnlocked(true)}
+                    className="text-xs underline text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Show all {filteredDaily.length} students
+                  </button>
+                </div>
+              )
             ) : (
               <DailyChart data={dailyChartData} activities={dailyActivities} />
             )}

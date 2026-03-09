@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import { Info } from "lucide-react";
+import * as Popover from "@radix-ui/react-popover";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { DailyRecord } from "@/lib/dailyService";
@@ -162,7 +164,27 @@ export default function DailyTable({
                   Overall
                 </th>
                 <th className={`${thFixed} border-r-2`} style={{ minWidth: 72 }}>
-                  In Range
+                  <span className="inline-flex items-center justify-end gap-1">
+                    In Range
+                    <Popover.Root>
+                      <Popover.Trigger asChild>
+                        <button className="cursor-pointer text-muted-foreground/60 hover:text-muted-foreground shrink-0 leading-none">
+                          <Info size={11} />
+                        </button>
+                      </Popover.Trigger>
+                      <Popover.Portal>
+                        <Popover.Content
+                          side="top"
+                          align="center"
+                          sideOffset={6}
+                          className="z-50 max-w-[220px] rounded-md border bg-card px-3 py-2 text-xs text-muted-foreground shadow-md"
+                        >
+                          Attendance rate calculated only within the selected date range. Compare this to <strong>Overall</strong> to spot recent improvement or decline.
+                          <Popover.Arrow className="fill-border" />
+                        </Popover.Content>
+                      </Popover.Portal>
+                    </Popover.Root>
+                  </span>
                 </th>
                 {/* Date columns */}
                 {visibleDates.map((d, i) => (
