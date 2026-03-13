@@ -26,7 +26,7 @@ import DailyMetricCards from "@/components/DailyMetricCards";
 import DayOfWeekChart from "@/components/DayOfWeekChart";
 import DayOfWeekTable from "@/components/DayOfWeekTable";
 import InsightsTable from "@/components/InsightsTable";
-import SchoolRegistrationTable from "@/components/SchoolRegistrationTable";
+import SchoolRegistrationTable, { type SchoolRow } from "@/components/SchoolRegistrationTable";
 import { generateInsights } from "@/lib/insightsService";
 import {
   AttendanceRecord,
@@ -148,22 +148,65 @@ export default function DashboardPage() {
   const categorySummaries1to1 = useMemo(() => getCategorySummaries(filtered1to1), [filtered1to1]);
   const typeSummaries1to1 = useMemo(() => getTypeSummaries(filtered1to1), [filtered1to1]);
   const countySummaries = useMemo(() => getCountySummaries(filtered1to1), [filtered1to1]);
+  const countySummariesDistricts = useMemo(() => getCountySummaries(filteredDistricts), [filteredDistricts]);
 
   const districtSummaries = useMemo(() => getDistrictSummaries(filteredDistricts), [filteredDistricts]);
   const districtSchoolSummaries = useMemo(() => getSchoolSummaries(filteredDistricts), [filteredDistricts]);
 
-  const schoolRegistration1to1 = useMemo(
-    () => schoolSummaries.map((s) => ({ school: s.school, totalStudents: s.totalStudents })),
-    [schoolSummaries]
-  );
-  const schoolRegistrationDistricts = useMemo(() => {
-    const schoolToDistrict = new Map(filteredDistricts.map((r) => [r.schoolName, r.district]));
-    return districtSchoolSummaries.map((s) => ({
-      school: s.school,
-      totalStudents: s.totalStudents,
-      district: schoolToDistrict.get(s.school) ?? "",
-    }));
-  }, [filteredDistricts, districtSchoolSummaries]);
+  const schoolRegistration1to1 = useMemo<SchoolRow[]>(() => {
+    const bySchool = new Map<string, typeof filtered1to1>();
+    filtered1to1.forEach((r) => {
+      if (!bySchool.has(r.schoolName)) bySchool.set(r.schoolName, []);
+      bySchool.get(r.schoolName)!.push(r);
+    });
+    return Array.from(bySchool.entries()).map(([school, records]) => {
+      const byBooking = new Map<string, typeof records>();
+      records.forEach((r) => {
+        const key = r.bookingId || "—";
+        if (!byBooking.has(key)) byBooking.set(key, []);
+        byBooking.get(key)!.push(r);
+      });
+      return {
+        school,
+        totalStudents: records.length,
+        bookings: Array.from(byBooking.entries()).map(([bookingId, recs]) => ({
+          bookingId,
+          activity: recs[0].activity,
+          enrolled: recs.filter((r) => r.enrolled).length,
+          waitlist: recs.filter((r) => r.waitlist).length,
+          totalStudents: recs.length,
+        })),
+      };
+    });
+  }, [filtered1to1]);
+
+  const schoolRegistrationDistricts = useMemo<SchoolRow[]>(() => {
+    const bySchool = new Map<string, typeof filteredDistricts>();
+    filteredDistricts.forEach((r) => {
+      if (!bySchool.has(r.schoolName)) bySchool.set(r.schoolName, []);
+      bySchool.get(r.schoolName)!.push(r);
+    });
+    return Array.from(bySchool.entries()).map(([school, records]) => {
+      const byBooking = new Map<string, typeof records>();
+      records.forEach((r) => {
+        const key = r.bookingId || "—";
+        if (!byBooking.has(key)) byBooking.set(key, []);
+        byBooking.get(key)!.push(r);
+      });
+      return {
+        school,
+        totalStudents: records.length,
+        district: records[0].district,
+        bookings: Array.from(byBooking.entries()).map(([bookingId, recs]) => ({
+          bookingId,
+          activity: recs[0].activity,
+          enrolled: recs.filter((r) => r.enrolled).length,
+          waitlist: recs.filter((r) => r.waitlist).length,
+          totalStudents: recs.length,
+        })),
+      };
+    });
+  }, [filteredDistricts]);
   const activitySummariesDistricts = useMemo(() => getActivitySummaries(filteredDistricts), [filteredDistricts]);
   const categorySummariesDistricts = useMemo(() => getCategorySummaries(filteredDistricts), [filteredDistricts]);
   const typeSummariesDistricts = useMemo(() => getTypeSummaries(filteredDistricts), [filteredDistricts]);
@@ -248,7 +291,6 @@ export default function DashboardPage() {
     setWBookingIds([]);
     setWWeekFrom(0);
     setWWeekTo(null);
-    if (records.length > 0) setView("weekly");
   };
 
   const handleDailyLoaded = (records: DailyRecord[]) => {
@@ -263,7 +305,6 @@ export default function DashboardPage() {
     setDDateFromIdx(null);
     setDDateToIdx(null);
     setDTableUnlocked(false);
-    if (records.length > 0) setView("daily");
   };
 
   const switchOverallSubView = (sv: "1to1" | "districts") => {
@@ -442,6 +483,7 @@ export default function DashboardPage() {
                 <ActivityChart data={activitySummariesDistricts} />
                 <CategoryChart data={categorySummariesDistricts} />
                 <TypeChart data={typeSummariesDistricts} />
+                <CountyPieChart data={countySummariesDistricts} />
                 <DistrictSummaryTable data={districtSummaries} />
                 <AttendanceTable data={filteredDistricts} />
                 <ZeroAttendanceTable data={filteredDistricts} />
